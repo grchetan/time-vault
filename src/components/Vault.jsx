@@ -9,6 +9,10 @@ export default function Vault({ user, darkMode, toggleDark, onPrivacy, onTerms }
   const [vaults, setVaults] = useState([])
   const [loading, setLoading] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  const displayName = user.displayName || user.email?.split('@')[0] || 'User'
+  const initials = displayName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
 
   useEffect(() => {
     const q = query(
@@ -30,14 +34,31 @@ export default function Vault({ user, darkMode, toggleDark, onPrivacy, onTerms }
       <nav className="topnav">
         <span className="topnav-title">Time Vault</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <button className="btn btn-outline" style={{ padding: '6px 10px', fontSize: 13 }}
-            onClick={toggleDark} title="Toggle dark mode">
+          <button className="btn btn-outline icon-btn" onClick={toggleDark} title="Toggle dark mode">
             {darkMode ? '☀' : '◑'}
           </button>
-          <span className="topnav-user">{user.email}</span>
-          <button className="btn btn-outline" style={{ padding: '6px 12px', fontSize: 13 }} onClick={() => signOut(auth)}>
-            Log out
-          </button>
+          <div style={{ position: 'relative' }}>
+            <button className="avatar-btn" onClick={() => setMenuOpen(m => !m)}>
+              {user.photoURL
+                ? <img src={user.photoURL} alt={displayName} className="avatar-img" />
+                : <div className="avatar-initials">{initials}</div>}
+              <span className="avatar-name">{displayName}</span>
+              <span style={{ fontSize: 10, color: 'var(--text-tertiary)' }}>▼</span>
+            </button>
+            {menuOpen && (
+              <div className="dropdown-menu">
+                <div className="dropdown-user">
+                  <div style={{ fontWeight: 600, fontSize: 14 }}>{displayName}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>{user.email}</div>
+                </div>
+                <div className="dropdown-divider" />
+                <button className="dropdown-item" onClick={() => { setMenuOpen(false); onPrivacy() }}>Privacy Policy</button>
+                <button className="dropdown-item" onClick={() => { setMenuOpen(false); onTerms() }}>Terms of Service</button>
+                <div className="dropdown-divider" />
+                <button className="dropdown-item danger" onClick={() => signOut(auth)}>Log out</button>
+              </div>
+            )}
+          </div>
         </div>
       </nav>
 
@@ -50,9 +71,7 @@ export default function Vault({ user, darkMode, toggleDark, onPrivacy, onTerms }
             </div>
           </div>
           {!showAdd && (
-            <button className="btn btn-primary" onClick={() => setShowAdd(true)}>
-              + New Lock
-            </button>
+            <button className="btn btn-primary" onClick={() => setShowAdd(true)}>+ New Lock</button>
           )}
         </div>
 
@@ -85,10 +104,6 @@ export default function Vault({ user, darkMode, toggleDark, onPrivacy, onTerms }
 
         <div className="footer">
           <span>AES-256 encrypted · Firebase secured</span>
-          <span style={{ margin: '0 8px' }}>·</span>
-          <button onClick={onPrivacy} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 12 }}>Privacy Policy</button>
-          <span style={{ margin: '0 8px' }}>·</span>
-          <button onClick={onTerms} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 12 }}>Terms</button>
           <span style={{ margin: '0 8px' }}>·</span>
           <a href="https://github.com/grchetan" target="_blank" rel="noopener noreferrer"
             style={{ color: 'var(--text-tertiary)', fontSize: 12, textDecoration: 'none' }}>
