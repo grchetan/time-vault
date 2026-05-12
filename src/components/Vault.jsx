@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { auth, db } from '../lib/firebase'
+import { auth } from '../lib/firebase'
 import { signOut } from 'firebase/auth'
-import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore'
+import { getVaults } from '../lib/vault'
 import VaultCard from './VaultCard'
 import AddVault from './AddVault'
 
@@ -10,24 +10,33 @@ export default function Vault({ user, darkMode, toggleDark, onPrivacy, onTerms }
   const [loading, setLoading] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [error, setError] = useState('')
 
   const displayName = user.displayName || user.email?.split('@')[0] || 'User'
   const initials = displayName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
 
-  useEffect(() => {
-    const q = query(
-      collection(db, 'vaults'),
-      where('uid', '==', user.uid),
-      orderBy('createdAt', 'desc')
-    )
-    const unsub = onSnapshot(q, (snap) => {
-      setVaults(snap.docs.map(d => ({ id: d.id, ...d.data() })))
-      setLoading(false)
-    })
-    return () => unsub()
-  }, [user.uid])
+  const fetchVaults = async () => {
+    try {
+      const token = await auth.currentUser.getIdToken()
+      const res = await getVaults(token)
+      setVaults(res.vaults || [])
+    } catch (e) {
+      setError('Vaults load nahi hue: ' + e.message)
+    }
+    setLoading(false)
+  }
 
-  const unlockedCount = vaults.filter(v => Date.now() >= v.unlockAt).length
+  useEffect(() => { fetchVaults() }, [])
+
+  const handleAdded = (vault) => {
+    setVaults(prev => [vault, ...prev])
+  }
+
+  const handleDeleted = (id) => {
+    setVaults(prev => prev.filter(v => v.id !== id))
+  }
+
+  const unlockedCount = vaults.filter(v => Date.now() >= v.unlock_at).length
 
   return (
     <>
@@ -75,7 +84,9 @@ export default function Vault({ user, darkMode, toggleDark, onPrivacy, onTerms }
           )}
         </div>
 
-        {showAdd && <AddVault onClose={() => setShowAdd(false)} />}
+        {error && <div className="error-msg">{error}</div>}
+
+        {showAdd && <AddVault onClose={() => setShowAdd(false)} onAdded={handleAdded} />}
 
         {!loading && vaults.length === 0 && !showAdd && (
           <div className="empty-state">
@@ -88,7 +99,7 @@ export default function Vault({ user, darkMode, toggleDark, onPrivacy, onTerms }
             <div className="empty-title">No vaults yet</div>
             <div className="empty-desc">
               Lock your first password behind a timer.<br/>
-              Apna pehla password yahan lock karo.
+              Server pe lock hoga — koi nahi tod sakta!
             </div>
             <button className="btn btn-primary" onClick={() => setShowAdd(true)}>
               Lock your first password
@@ -98,12 +109,18 @@ export default function Vault({ user, darkMode, toggleDark, onPrivacy, onTerms }
 
         {!loading && vaults.length > 0 && (
           <div className="vault-list">
-            {vaults.map(vault => <VaultCard key={vault.id} vault={vault} />)}
+            {vaults.map(vault => (
+              <VaultCard key={vault.id} vault={vault} onDeleted={handleDeleted} />
+            ))}
           </div>
         )}
 
         <div className="footer">
-          <span>AES-256 encrypted · Firebase secured</span>
+          <span>AES-256 + Server-side lock · Koi nahi tod sakta</span>
+          <span style={{ margin: '0 8px' }}>·</span>
+          <button onClick={onPrivacy} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 12 }}>Privacy</button>
+          <span style={{ margin: '0 8px' }}>·</span>
+          <button onClick={onTerms} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 12 }}>Terms</button>
           <span style={{ margin: '0 8px' }}>·</span>
           <a href="https://github.com/grchetan" target="_blank" rel="noopener noreferrer"
             style={{ color: 'var(--text-tertiary)', fontSize: 12, textDecoration: 'none' }}>

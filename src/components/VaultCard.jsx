@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
+import { auth } from '../lib/firebase'
+import { revealPassword, deleteVault } from '../lib/vault'
 import { decryptPassword } from '../lib/crypto'
-import { db } from '../lib/firebase'
-import { doc, deleteDoc } from 'firebase/firestore'
 
 function CountdownRing({ unlockAt, createdAt }) {
   const [now, setNow] = useState(Date.now())
@@ -53,135 +53,111 @@ function formatCountdown(ms) {
   return (sec + 's remaining')
 }
 
-export default function VaultCard({ vault }) {
+export default function VaultCard({ vault, onDeleted }) {
   const [now, setNow] = useState(Date.now())
-  const [revealedPasswords, setRevealedPasswords] = useState({})
+  const [revealedPasswords, setRevealedPasswords] = useState(null)
   const [copied, setCopied] = useState(null)
+  const [loading, setLoading] = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const [notified, setNotified] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000)
     return () => clearInterval(id)
   }, [])
 
-  const isUnlocked = now >= vault.unlockAt
-  const remaining = Math.max(0, vault.unlockAt - now)
+  const isUnlocked = now >= vault.unlock_at
+  const remaining = Math.max(0, vault.unlock_at - now)
 
-  // Email notification when vault unlocks
-  useEffect(() => {
-    if (isUnlocked && !notified) {
-      setNotified(true)
-      sendEmailNotification(vault)
-    }
-  }, [isUnlocked])
-
-  const sendEmailNotification = async (vault) => {
-    const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID
-    const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID
-    const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-    if (!serviceId || !templateId || !publicKey) return
+  const handleReveal = async () => {
+    if (revealedPasswords) { setRevealedPasswords(null); return }
+    setLoading(true); setError('')
     try {
-      await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          service_id: serviceId,
-          template_id: templateId,
-          user_id: publicKey,
-          template_params: {
-            vault_name: vault.name,
-            unlock_date: new Date(vault.unlockAt).toLocaleDateString('en-IN'),
-            to_email: import.meta.env.VITE_NOTIFICATION_EMAIL || '',
-          }
+      const token = await auth.currentUser.getIdToken()
+      const res = await revealPassword(token, vault.id)
+      
+      // Server returns encrypted passwords — decrypt on client
+      const decrypted = await Promise.all(
+        res.passwords.map(async (pw) => {
+          const plaintext = await decryptPassword({
+            encrypted: pw.encrypted,
+            iv: pw.iv,
+            key: pw.key,
+          })
+          return { label: pw.label, text: plaintext }
         })
-      })
-    } catch (e) { /* silent fail */ }
-  }
-
-  const handleReveal = async (pwIndex) => {
-    if (!isUnlocked) return
-    if (revealedPasswords[pwIndex] !== undefined) {
-      setRevealedPasswords(r => { const n = { ...r }; delete n[pwIndex]; return n })
-      return
+      )
+      setRevealedPasswords(decrypted)
+    } catch (e) {
+      setError(e.message)
     }
-    const pwData = vault.passwords[pwIndex]
-    const pass = await decryptPassword(pwData)
-    setRevealedPasswords(r => ({ ...r, [pwIndex]: pass }))
-  }
-
-  const handleCopy = (id, pass) => {
-    navigator.clipboard.writeText(pass)
-    setCopied(id)
-    setTimeout(() => setCopied(null), 2000)
+    setLoading(false)
   }
 
   const handleDelete = async () => {
-    if (!window.confirm('Delete this vault? This cannot be undone.\nKya aap sure hain?')) return
+    if (!window.confirm('Delete this vault?\nKya aap sure hain?')) return
     setDeleting(true)
-    await deleteDoc(doc(db, 'vaults', vault.id))
+    try {
+      const token = await auth.currentUser.getIdToken()
+      await deleteVault(token, vault.id)
+      onDeleted(vault.id)
+    } catch (e) {
+      setError(e.message)
+      setDeleting(false)
+    }
   }
 
-  // Support old single-password format
-  const passwords = vault.passwords || [{
-    label: 'Password',
-    encrypted: vault.encrypted,
-    iv: vault.iv,
-    key: vault.key,
-  }]
+  const handleCopy = (i, text) => {
+    navigator.clipboard.writeText(text)
+    setCopied(i)
+    setTimeout(() => setCopied(null), 2000)
+  }
 
   return (
     <div className={'vault-card' + (isUnlocked ? ' unlocked' : '')}>
-      <CountdownRing unlockAt={vault.unlockAt} createdAt={vault.createdAt} />
+      <CountdownRing unlockAt={vault.unlock_at} createdAt={vault.created_at} />
       <div className="vault-info">
         <div className="vault-info-top">
           <div>
             <div className="vault-name">{vault.name}</div>
             <div className="vault-date">
-              {vault.durationLabel || (vault.days + ' days')} lock
-              {' · '}locked {new Date(vault.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+              {vault.duration_label} lock · {new Date(vault.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
             </div>
-            {vault.reason ? (
-              <div className="vault-reason">"{vault.reason}"</div>
-            ) : null}
+            {vault.reason ? <div className="vault-reason">"{vault.reason}"</div> : null}
           </div>
-          <button className="card-del" onClick={handleDelete} disabled={deleting} title="Delete vault">×</button>
+          <button className="card-del" onClick={handleDelete} disabled={deleting}>×</button>
         </div>
+
+        {error && <div className="error-msg" style={{ fontSize: 12, marginBottom: 8 }}>{error}</div>}
 
         {isUnlocked ? (
           <>
             <span className="badge badge-success">Unlocked</span>
-            {passwords.map((pw, i) => (
+            {revealedPasswords && revealedPasswords.map((pw, i) => (
               <div key={i} style={{ marginBottom: 8 }}>
-                {passwords.length > 1 && (
+                {revealedPasswords.length > 1 && (
                   <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4, fontWeight: 500 }}>
                     {pw.label}
                   </div>
                 )}
-                {revealedPasswords[i] !== undefined && (
-                  <div className="pass-box">
-                    <span className="pass-text">{revealedPasswords[i]}</span>
-                    <button className="pass-copy" onClick={() => handleCopy(i, revealedPasswords[i])}>
-                      {copied === i ? 'Copied!' : 'Copy'}
-                    </button>
-                  </div>
-                )}
-                <button className="btn btn-outline"
-                  style={{ fontSize: 13, padding: '5px 12px', marginTop: 4 }}
-                  onClick={() => handleReveal(i)}>
-                  {revealedPasswords[i] !== undefined ? 'Hide' : 'Show password'}
-                </button>
+                <div className="pass-box">
+                  <span className="pass-text">{pw.text}</span>
+                  <button className="pass-copy" onClick={() => handleCopy(i, pw.text)}>
+                    {copied === i ? 'Copied!' : 'Copy'}
+                  </button>
+                </div>
               </div>
             ))}
+            <button className="btn btn-outline" style={{ fontSize: 13, padding: '5px 12px' }}
+              onClick={handleReveal} disabled={loading}>
+              {loading ? 'Loading...' : revealedPasswords ? 'Hide' : 'Show password'}
+            </button>
           </>
         ) : (
           <>
             <div className="vault-countdown">{formatCountdown(remaining)}</div>
             <div className="vault-unlock-date">
-              Unlocks {new Date(vault.unlockAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
-              {remaining < 3600000 && remaining > 0 ? (
-                ' · ' + Math.floor(remaining / 60000) + 'm ' + Math.floor((remaining % 60000) / 1000) + 's'
-              ) : ''}
+              Unlocks {new Date(vault.unlock_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
             </div>
           </>
         )}
