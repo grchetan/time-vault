@@ -9,6 +9,7 @@ import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 import { AuthProvider } from '@/lib/auth';
 import { Toaster } from '@/components/ui/sonner';
+import { useAuth } from '@/lib/auth';
 
 function NotFoundComponent() {
   return (
@@ -65,18 +66,31 @@ export const Route = createRootRouteWithContext()({
   errorComponent: ErrorComponent,
 });
 
+function AppLayout() {
+  const { loading } = useAuth();
+  return (
+    <div className="min-h-screen flex flex-col">
+      <SiteHeader />
+      <main className="flex-1">
+        {loading ? (
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+          </div>
+        ) : (
+          <Outlet />
+        )}
+      </main>
+      <SiteFooter />
+    </div>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <div className="min-h-screen flex flex-col">
-          <SiteHeader />
-          <main className="flex-1">
-            <Outlet />
-          </main>
-          <SiteFooter />
-        </div>
+        <AppLayout />
         <Toaster richColors position="top-center" />
       </AuthProvider>
     </QueryClientProvider>
