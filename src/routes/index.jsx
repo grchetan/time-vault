@@ -9,6 +9,11 @@ import {
   Clock,
   Heart,
   ArrowRight,
+  RefreshCw,
+  KeyRound,
+  Copy,
+  LogOut,
+  CheckCircle2,
 } from 'lucide-react';
 import heroImg from '@/assets/img1.png';
 import focusImg from '@/assets/img2.png';
@@ -165,6 +170,100 @@ function Index() {
               </li>
             ))}
           </ul>
+        </div>
+      </section>
+
+      {/* ===== HOW TO USE ===== */}
+      <section className="bg-soft">
+        <div className="container mx-auto max-w-6xl px-5 py-20">
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary-soft text-primary text-xs font-semibold mb-4">
+              <CheckCircle2 className="size-3.5" /> How to Use
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold">
+              Lock any app in 4 steps
+            </h2>
+            <p className="mt-3 text-muted-foreground">
+              Works for Snapchat, Instagram, YouTube, or any app with a
+              password.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-5">
+            {[
+              {
+                icon: RefreshCw,
+                color: 'bg-violet-100 text-violet-600',
+                tipColor: 'bg-violet-50 text-violet-700',
+                num: '01',
+                title: 'Generate a Random Password',
+                desc: "Go to passwordsgenerator.net and create a strong random password like 'xK9#mP2$qL7!nB4@'. Copy it.",
+                tip: 'Use 16+ characters with symbols & numbers',
+              },
+              {
+                icon: KeyRound,
+                color: 'bg-amber-100 text-amber-600',
+                tipColor: 'bg-amber-50 text-amber-700',
+                num: '02',
+                title: 'Change Your App Password',
+                desc: 'Open Snapchat / Instagram → Settings → Password → Replace with the random password. Log out of all other devices.',
+                tip: 'Log out from all active sessions too',
+              },
+              {
+                icon: Copy,
+                color: 'bg-emerald-100 text-emerald-600',
+                tipColor: 'bg-emerald-50 text-emerald-700',
+                num: '03',
+                title: 'Lock It in TimeVault',
+                desc: 'Come back here → New Lock → paste the random password → choose your timer (7 days, 30 days, etc.) → Lock it.',
+                tip: 'AES-256 encrypted before saving — server-side timer',
+              },
+              {
+                icon: LogOut,
+                color: 'bg-rose-100 text-rose-600',
+                tipColor: 'bg-rose-50 text-rose-700',
+                num: '04',
+                title: "You're Locked Out — By Choice",
+                desc: 'You cannot log in to the app anymore. When the timer expires, come back, reveal your password, and regain access.',
+                tip: 'Nobody can bypass the server-side timer',
+              },
+            ].map((s) => (
+              <div
+                key={s.num}
+                className="rounded-3xl bg-card border border-border p-6 shadow-card flex gap-5 hover:shadow-soft transition-shadow"
+              >
+                <div className="shrink-0">
+                  <div
+                    className={`size-12 rounded-2xl ${s.color} grid place-items-center`}
+                  >
+                    <s.icon className="size-5" />
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-bold text-muted-foreground">
+                      {s.num}
+                    </span>
+                    <h3 className="font-semibold text-base">{s.title}</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+                    {s.desc}
+                  </p>
+                  <div
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${s.tipColor}`}
+                  >
+                    💡 {s.tip}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="text-center mt-10">
+            <Button asChild size="lg" className="rounded-full">
+              <Link to="/login">
+                Start your first lock <ArrowRight className="ml-1 size-4" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>
 

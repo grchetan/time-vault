@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Mail, Send, Trash2, Clock, CheckCircle2 } from 'lucide-react'
+import { Mail, Send, Trash2, Clock, CheckCircle2, FlaskConical } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/lib/auth'
 import { createFutureMail, getFutureMails, deleteFutureMail } from '@/lib/future-mail'
@@ -13,9 +13,10 @@ export const Route = createFileRoute('/_authenticated/future-mail')({ component:
 function MailCard({ mail, onDelete }) {
   const isDelivered = mail.delivered
   const daysLeft = Math.ceil((mail.deliver_at - Date.now()) / 86400000)
-  const deliverDate = new Date(mail.deliver_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
+  const deliverDateTime = new Date(mail.deliver_at).toLocaleString('en-IN', {
+    day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+  })
   const createdDate = new Date(mail.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-
   return (
     <div className={`rounded-3xl bg-card border p-5 shadow-card flex gap-4 transition-colors ${isDelivered ? 'border-green-200 bg-green-50/30' : 'border-border'}`}>
       <div className="shrink-0 pt-1">
@@ -48,7 +49,7 @@ function MailCard({ mail, onDelete }) {
         </div>
         <div className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
           <Mail className="size-3.5" />
-          <span>{isDelivered ? 'Delivered on' : 'Scheduled for'} <strong className="text-foreground">{deliverDate}</strong></span>
+          <span>{isDelivered ? 'Delivered on' : 'Scheduled for'} <strong className="text-foreground">{deliverDateTime}</strong></span>
         </div>
       </div>
     </div>
@@ -62,13 +63,22 @@ function FutureMailPage() {
   const [showForm, setShowForm] = useState(false)
   const [subject, setSubject] = useState('')
   const [body, setBody] = useState('')
-  const [deliverAt, setDeliverAt] = useState('')
+  const [deliverDate, setDeliverDate] = useState('')
+  const [deliverTime, setDeliverTime] = useState('09:00')
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
 
-  const minDate = new Date()
-  minDate.setDate(minDate.getDate() + 1)
-  const minDateStr = minDate.toISOString().split('T')[0]
+  // Demo mode — fills form with today + 2 mins from now
+  const fillDemo = () => {
+    const now = new Date()
+    now.setMinutes(now.getMinutes() + 2)
+    setDeliverDate(now.toISOString().split('T')[0])
+    setDeliverTime(now.toTimeString().slice(0, 5))
+    setSubject('Test — Did Future Mail work? 🎉')
+    setBody("Hey! If you're reading this, the Future Mail feature is working perfectly!\n\nThis was a test email from TimeVault.")
+    setShowForm(true)
+    toast.info('Demo filled! Submit to test email delivery in ~2 minutes.')
+  }
 
   useEffect(() => {
     if (!user) return
@@ -80,21 +90,22 @@ function FutureMailPage() {
 
   const handleSend = async (e) => {
     e.preventDefault()
-    if (!body.trim() || !deliverAt) { setError('Message and delivery date are required.'); return }
+    if (!body.trim() || !deliverDate) { setError('Message and delivery date are required.'); return }
     setSending(true); setError('')
     try {
+      const deliverAt = new Date(`${deliverDate}T${deliverTime}:00`).getTime()
+      if (deliverAt <= Date.now()) { setError('Delivery time must be in the future.'); setSending(false); return }
       const res = await createFutureMail({
         subject: subject.trim() || 'A letter from your past self',
         message: body.trim(),
-        deliverAt: new Date(deliverAt).getTime(),
+        deliverAt,
       })
       setMails((prev) => [...prev, res.mail].sort((a, b) => a.deliver_at - b.deliver_at))
-      toast.success('✉️ Letter sealed! It will be delivered on ' + new Date(deliverAt).toLocaleDateString('en-IN', { dateStyle: 'long' }))
-      setSubject(''); setBody(''); setDeliverAt('')
+      const d = new Date(deliverAt).toLocaleString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+      toast.success('✉️ Sealed! Delivery: ' + d)
+      setSubject(''); setBody(''); setDeliverDate(''); setDeliverTime('09:00')
       setShowForm(false)
-    } catch (e) {
-      setError(e.message || 'Could not schedule letter')
-    }
+    } catch (e) { setError(e.message || 'Could not schedule letter') }
     setSending(false)
   }
 
@@ -104,13 +115,11 @@ function FutureMailPage() {
       await deleteFutureMail(id)
       setMails((prev) => prev.filter((m) => m.id !== id))
       toast.success('Letter cancelled')
-    } catch (e) {
-      toast.error(e.message || 'Could not delete')
-    }
+    } catch (e) { toast.error(e.message || 'Could not delete') }
   }
 
-  const pendingCount = mails.filter((m) => !m.delivered).length
-  const deliveredCount = mails.filter((m) => m.delivered).length
+  const pending = mails.filter((m) => !m.delivered).length
+  const delivered = mails.filter((m) => m.delivered).length
 
   return (
     <div className="container mx-auto max-w-2xl px-5 py-12">
@@ -119,20 +128,19 @@ function FutureMailPage() {
           <Mail className="size-7" />
         </div>
         <h1 className="text-3xl font-bold">Future Mail</h1>
-        <p className="mt-2 text-muted-foreground">
-          Write a letter to your future self. We'll deliver it by email on the date you choose.
-        </p>
+        <p className="mt-2 text-muted-foreground">Write a letter to your future self — delivered by email on the date and time you choose.</p>
         {!loading && mails.length > 0 && (
-          <p className="mt-1 text-sm text-muted-foreground">
-            {pendingCount} scheduled · {deliveredCount} delivered
-          </p>
+          <p className="mt-1 text-sm text-muted-foreground">{pending} scheduled · {delivered} delivered</p>
         )}
       </div>
 
       {!showForm && (
-        <div className="flex justify-center mb-8">
+        <div className="flex justify-center gap-3 mb-8 flex-wrap">
           <Button onClick={() => setShowForm(true)} className="rounded-full">
             <Send className="size-4 mr-2" /> Write a Letter
+          </Button>
+          <Button variant="outline" onClick={fillDemo} className="rounded-full">
+            <FlaskConical className="size-4 mr-2" /> Test Email (Demo)
           </Button>
         </div>
       )}
@@ -140,49 +148,42 @@ function FutureMailPage() {
       {showForm && (
         <form onSubmit={handleSend} className="rounded-3xl bg-card border border-border p-7 shadow-card space-y-5 mb-8">
           <h2 className="text-lg font-semibold">Write to your future self</h2>
-
           <div className="space-y-1.5">
-            <Label htmlFor="subject">Subject (optional)</Label>
-            <Input id="subject" value={subject} onChange={(e) => setSubject(e.target.value)}
-              placeholder="Hey future me…" />
+            <Label>Subject (optional)</Label>
+            <Input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Hey future me…" />
           </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="deliver-at">Deliver on <span className="text-destructive">*</span></Label>
-            <Input id="deliver-at" type="date" value={deliverAt} min={minDateStr}
-              onChange={(e) => setDeliverAt(e.target.value)} required />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label>Delivery Date <span className="text-destructive">*</span></Label>
+              <Input type="date" value={deliverDate} onChange={(e) => setDeliverDate(e.target.value)} required />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Delivery Time <span className="text-destructive">*</span></Label>
+              <Input type="time" value={deliverTime} onChange={(e) => setDeliverTime(e.target.value)} required />
+            </div>
           </div>
-
           <div className="space-y-1.5">
-            <Label htmlFor="body">Your letter <span className="text-destructive">*</span></Label>
-            <textarea id="body" value={body} onChange={(e) => setBody(e.target.value)}
-              required rows={8}
-              className="flex w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
+            <Label>Your letter <span className="text-destructive">*</span></Label>
+            <textarea value={body} onChange={(e) => setBody(e.target.value)} required rows={8}
+              className="flex w-full rounded-xl border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
               placeholder="Write whatever you want your future self to know…" />
             <div className="text-xs text-muted-foreground text-right">{body.length} characters</div>
           </div>
-
           <div className="rounded-xl bg-blue-50 border border-blue-100 px-4 py-3 text-xs text-blue-700">
-            ℹ️ This letter will be sent to <strong>{user?.email}</strong> on the selected date.
+            ℹ️ This letter will be sent to <strong>{user?.email}</strong> on the selected date and time.
           </div>
-
           {error && <div className="text-xs text-destructive rounded-xl bg-destructive/10 px-3 py-2">{error}</div>}
-
           <div className="flex gap-2">
             <Button type="submit" className="flex-1 rounded-full" disabled={sending}>
               <Send className="size-4 mr-2" />{sending ? 'Sealing…' : 'Seal & Schedule'}
             </Button>
             <Button type="button" variant="outline" className="rounded-full"
-              onClick={() => { setShowForm(false); setError('') }} disabled={sending}>
-              Cancel
-            </Button>
+              onClick={() => { setShowForm(false); setError('') }} disabled={sending}>Cancel</Button>
           </div>
         </form>
       )}
 
-      {loading && (
-        <div className="text-center py-10 text-muted-foreground text-sm">Loading letters…</div>
-      )}
+      {loading && <div className="text-center py-10 text-muted-foreground text-sm">Loading letters…</div>}
 
       {!loading && mails.length === 0 && !showForm && (
         <div className="text-center py-16">
@@ -190,24 +191,17 @@ function FutureMailPage() {
             <Mail className="size-8" />
           </div>
           <h3 className="font-semibold text-lg">No letters yet</h3>
-          <p className="text-sm text-muted-foreground mt-2 max-w-xs mx-auto">
-            Write your first letter to your future self — it will be delivered on the date you choose.
-          </p>
+          <p className="text-sm text-muted-foreground mt-2 max-w-xs mx-auto">Write your first letter — delivered on the date and time you choose.</p>
         </div>
       )}
 
       {mails.length > 0 && (
         <div className="space-y-4">
-          {mails.map((mail) => (
-            <MailCard key={mail.id} mail={mail} onDelete={handleDelete} />
-          ))}
+          {mails.map((mail) => <MailCard key={mail.id} mail={mail} onDelete={handleDelete} />)}
         </div>
       )}
-
       {mails.length > 0 && (
-        <p className="text-center text-xs text-muted-foreground mt-6">
-          Letters are delivered to your registered email address
-        </p>
+        <p className="text-center text-xs text-muted-foreground mt-6">Letters delivered to your registered email</p>
       )}
     </div>
   )
