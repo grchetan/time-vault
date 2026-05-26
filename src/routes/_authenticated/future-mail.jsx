@@ -14,6 +14,7 @@ import {
 import { Mail, Send, Trash2, Clock, CheckCircle2, FlaskConical, Info, PenLine, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/lib/auth'
+import { auth } from '@/lib/firebase'
 import { createFutureMail, getFutureMails, deleteFutureMail } from '@/lib/future-mail'
 
 export const Route = createFileRoute('/_authenticated/future-mail')({ component: FutureMailPage })
@@ -61,7 +62,8 @@ function MailCard({ mail, onDelete }) {
   const handleDelete = async () => {
     setDeleting(true)
     try {
-      await deleteFutureMail(mail.id)
+      const token = await auth.currentUser.getIdToken()
+      await deleteFutureMail(token, mail.id)
       onDelete(mail.id)
       toast.success('Letter cancelled')
       setDeleteOpen(false)
@@ -170,7 +172,8 @@ function FutureMailPage() {
 
   useEffect(() => {
     if (!user) return
-    getFutureMails()
+    auth.currentUser.getIdToken()
+      .then((token) => getFutureMails(token))
       .then((res) => setMails(res.mails || []))
       .catch((e) => toast.error(e.message || 'Could not load letters'))
       .finally(() => setLoading(false))
@@ -187,7 +190,8 @@ function FutureMailPage() {
         setSending(false)
         return
       }
-      const res = await createFutureMail({
+      const token = await auth.currentUser.getIdToken()
+      const res = await createFutureMail(token, {
         subject: subject.trim() || 'A letter from your past self',
         message: body.trim(),
         deliverAt,

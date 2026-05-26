@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from 'firebase/app'
-import { getAuth, browserLocalPersistence, setPersistence } from 'firebase/auth'
+import { getAuth } from 'firebase/auth'
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -13,8 +13,3 @@ const firebaseConfig = {
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
 export const auth = getAuth(app)
 
-// Explicitly set persistence so the session survives page refreshes.
-// This is a promise; auth.onAuthStateChanged will fire after it resolves.
-export const persistenceReady = setPersistence(auth, browserLocalPersistence).catch((err) => {
-  console.warn('[TimeVault] Could not set auth persistence:', err)
-})

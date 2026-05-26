@@ -56,9 +56,9 @@ function RevealSection({ children, className = '', delay = 0 }) {
 /* Trust badge */
 function TrustBadge({ icon: Icon, label }) {
   return (
-    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-      <div className="size-5 rounded-full bg-primary-soft grid place-items-center flex-shrink-0">
-        <Icon className="size-3 text-primary" />
+    <div className="flex items-center gap-2.5 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors duration-300 group cursor-default">
+      <div className="size-6 rounded-lg bg-primary-soft/80 border border-primary/10 grid place-items-center flex-shrink-0 group-hover:scale-110 group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-sm">
+        <Icon className="size-3 text-primary group-hover:text-white transition-colors" />
       </div>
       {label}
     </div>
@@ -74,20 +74,19 @@ function Index() {
 
   return (
     <div>
-      {/* ── Hero ──────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden">
-        <div className="container mx-auto max-w-6xl px-5 pt-16 pb-28 md:pt-24 md:pb-36 grid md:grid-cols-2 gap-14 items-center">
+      {/* ── Hero with reactive spotlight developer grid ────────────────── */}
+      <section className="relative overflow-hidden bg-grid-spotlight border-b border-border/30 pb-4">
+        <div className="container mx-auto max-w-6xl px-5 pt-16 pb-28 md:pt-24 md:pb-36 grid md:grid-cols-2 gap-14 items-center relative z-10">
           {/* Left: copy */}
           <div className="space-y-7 animate-slide-up">
-            <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass border border-primary/20 text-xs font-semibold text-primary shadow-card">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary-soft/80 border border-primary/20 text-xs font-bold text-primary shadow-soft tracking-wide uppercase animate-pulse-glow">
               <Sparkles className="size-3.5" />
               Built for deep focus
             </span>
 
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold leading-[1.04] tracking-tight text-foreground">
-              Lock the noise.{' '}
-              <br />
-              <span className="text-gradient">Unlock</span> your time.
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold leading-[1.04] tracking-tight text-foreground font-display">
+              Lock the noise. <br />
+              <span className="text-gradient-moving">Unlock</span> your time.
             </h1>
 
             <p className="text-lg text-muted-foreground max-w-md leading-relaxed">
@@ -100,47 +99,92 @@ function Index() {
               <Button
                 asChild
                 size="lg"
-                className="rounded-full shadow-soft hover:shadow-glow bg-gradient-primary hover:opacity-90 text-base transition-all duration-200 group"
+                className="rounded-full shadow-soft hover:shadow-glow bg-gradient-primary hover:opacity-95 text-base font-semibold transition-all duration-300 transform hover:-translate-y-0.5 group px-7 py-6"
               >
                 <Link to="/login">
                   Start your first lock
-                  <ArrowRight className="ml-1.5 size-4 group-hover:translate-x-0.5 transition-transform" />
+                  <ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform duration-300" />
                 </Link>
               </Button>
               <Button
                 asChild
                 size="lg"
                 variant="outline"
-                className="rounded-full border-border/70 hover:border-primary/30 hover:bg-primary-soft/50 transition-all duration-200"
+                className="rounded-full border-border/80 hover:border-primary/30 hover:bg-primary-soft/30 hover:text-primary text-base font-semibold transition-all duration-300 transform hover:-translate-y-0.5 px-7 py-6"
               >
                 <Link to="/features">See how it works</Link>
               </Button>
             </div>
 
-            <div className="flex flex-wrap items-center gap-5 pt-1">
+            <div className="flex flex-wrap items-center gap-6 pt-3">
               <TrustBadge icon={Shield} label="End-to-end private" />
               <TrustBadge icon={Zap} label="Free to start" />
-              <TrustBadge icon={CheckCircle2} label="No credit card needed" />
+              <TrustBadge icon={CheckCircle2} label="No card required" />
             </div>
           </div>
 
-          {/* Right: illustration */}
-          <div className="relative animate-fade-in delay-200">
-            {/* Decorative rings */}
+          {/* Right: Interactive Premium Mockup & Illustration */}
+          <div className="relative animate-fade-in delay-200 flex items-center justify-center p-4">
+            {/* Concentric Glowing Rings (Vault/Chronometer CONCEPT) */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="size-80 rounded-full border border-primary/10 animate-spin-slow" />
-              <div className="absolute size-64 rounded-full border border-primary/15" style={{ animationDelay: '-3s' }} />
+              {/* Outer revolving dashed ring */}
+              <svg className="size-[420px] absolute opacity-40 animate-spin-slow text-primary/20" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" strokeWidth="0.75" strokeDasharray="3 4" />
+              </svg>
+              {/* Mid revolving track */}
+              <svg className="size-[340px] absolute opacity-35 animate-orbit-slow text-secondary/30" viewBox="0 0 100 100" style={{ animationDuration: '26s' }}>
+                <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="0.75" strokeDasharray="8 12" />
+              </svg>
+              {/* Inner ambient ring */}
+              <div className="size-[260px] rounded-full border border-primary/10 absolute opacity-50 animate-pulse" />
             </div>
-            {/* Blobs */}
-            <div className="blob bg-primary/25 size-64 -top-10 -left-10 animate-blob" />
-            <div className="blob bg-secondary/30 size-56 bottom-0 -right-10 animate-blob" style={{ animationDelay: '-5s' }} />
-            <img
-              src={heroImg}
-              alt="Peaceful character meditating on a giant pastel lock with a clock"
-              width={640}
-              height={640}
-              className="relative w-full max-w-lg mx-auto animate-float drop-shadow-2xl"
-            />
+            
+            {/* Decorative background blobs */}
+            <div className="blob bg-primary/20 size-80 -top-12 -left-12 animate-blob" />
+            <div className="blob bg-secondary/25 size-72 -bottom-8 -right-8 animate-blob" style={{ animationDelay: '-5s' }} />
+
+            {/* Floating Glass Stats Chip 1: Focus Score */}
+            <div className="absolute top-[8%] left-[5%] z-20 glass px-4 py-2 rounded-2xl flex items-center gap-2.5 shadow-hover border border-white/50 animate-float-slow cursor-default select-none hover:scale-105 transition-transform duration-300">
+              <div className="size-6 rounded-lg bg-emerald-100 border border-emerald-200 grid place-items-center text-emerald-600 shadow-sm">
+                <Sparkles className="size-3.5" />
+              </div>
+              <div className="flex flex-col text-left">
+                <span className="text-[10px] text-muted-foreground font-extrabold tracking-wider uppercase font-mono">Focus Rating</span>
+                <span className="text-xs font-extrabold text-foreground leading-none mt-0.5">98% Active</span>
+              </div>
+            </div>
+
+            {/* Floating Glass Stats Chip 2: Locked Timer */}
+            <div className="absolute bottom-[18%] -right-[2%] z-20 glass px-4 py-2.5 rounded-2xl flex items-center gap-2.5 shadow-hover border border-white/50 animate-float-fast cursor-default select-none hover:scale-105 transition-transform duration-300" style={{ animationDelay: '-1.5s' }}>
+              <div className="size-6 rounded-lg bg-violet-100 border border-violet-200 grid place-items-center text-violet-600 animate-pulse shadow-sm">
+                <Lock className="size-3.5" />
+              </div>
+              <div className="flex flex-col text-left">
+                <span className="text-[10px] text-muted-foreground font-extrabold tracking-wider uppercase font-mono">Timer Guard</span>
+                <span className="text-xs font-extrabold text-foreground leading-none mt-0.5">Locked by Choice</span>
+              </div>
+            </div>
+
+            {/* Floating Glass Stats Chip 3: AES Encryption */}
+            <div className="absolute bottom-[10%] left-[8%] z-20 glass px-4 py-2 rounded-2xl flex items-center gap-2 shadow-hover border border-white/50 animate-float-slow cursor-default select-none hover:scale-105 transition-transform duration-300" style={{ animationDelay: '-3.5s' }}>
+              <div className="relative flex items-center justify-center">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping absolute" />
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 relative" />
+              </div>
+              <span className="text-xs font-extrabold text-foreground font-display tracking-tight">AES-256 Shield</span>
+            </div>
+
+            {/* Cartoon illustration with glowing glass wrap */}
+            <div className="relative group/ill transform hover:scale-[1.01] transition-transform duration-500 z-10">
+              <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-secondary/15 rounded-3xl blur-2xl opacity-0 group-hover/ill:opacity-100 transition-opacity duration-700 pointer-events-none" />
+              <img
+                src={heroImg}
+                alt="Cartoon productivity meditating character lock representing focus"
+                width={640}
+                height={640}
+                className="relative w-full max-w-md mx-auto animate-float drop-shadow-2xl z-10"
+              />
+            </div>
           </div>
         </div>
       </section>

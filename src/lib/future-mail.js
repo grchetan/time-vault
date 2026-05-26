@@ -1,9 +1,6 @@
-import { auth } from './firebase'
-
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 
-async function callFutureMail(body) {
-  const token = await auth.currentUser.getIdToken()
+async function callFutureMail(token, body) {
   const res = await fetch(`${SUPABASE_URL}/functions/v1/future-mail`, {
     method: 'POST',
     headers: {
@@ -19,6 +16,7 @@ async function callFutureMail(body) {
   return res.json()
 }
 
-export const createFutureMail = (data) => callFutureMail({ action: 'create', ...data })
-export const getFutureMails = () => callFutureMail({ action: 'list' })
-export const deleteFutureMail = (mailId) => callFutureMail({ action: 'delete', mailId })
+export const createFutureMail = (token, data) => callFutureMail(token, { action: 'create', ...data })
+export const getFutureMails = (token) => callFutureMail(token, { action: 'list' })
+export const deleteFutureMail = (token, mailId) => callFutureMail(token, { action: 'delete', mailId })
+
