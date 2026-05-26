@@ -210,12 +210,12 @@ function DocsPage() {
       />
 
       {/* Floating Background Glow Orbs */}
-      <div className="fixed top-24 left-1/4 size-96 rounded-full bg-primary/5 blur-3xl pointer-events-none z-0 select-none animate-pulse" />
-      <div className="fixed bottom-24 right-1/4 size-80 rounded-full bg-secondary/5 blur-3xl pointer-events-none z-0 select-none animate-pulse" style={{ animationDelay: '2s' }} />
+      <div className="hidden sm:block fixed top-24 left-1/4 size-96 rounded-full bg-primary/5 blur-3xl pointer-events-none z-0 select-none animate-pulse" />
+      <div className="hidden sm:block fixed bottom-24 right-1/4 size-80 rounded-full bg-secondary/5 blur-3xl pointer-events-none z-0 select-none animate-pulse" style={{ animationDelay: '2s' }} />
 
-      <div className="relative z-10 container mx-auto max-w-6xl px-5 py-12">
+      <div className="relative z-10 container mx-auto max-w-6xl px-4 sm:px-5 py-6 sm:py-12">
         {/* Editorial Guide Header */}
-        <div className="border-b border-border/40 pb-8 mb-10">
+        <div className="border-b border-border/40 pb-6 sm:pb-8 mb-6 sm:mb-10">
           <div className="flex flex-wrap items-center gap-3 mb-4">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-soft text-primary text-xs font-bold font-mono tracking-wide uppercase shadow-sm">
               <BookOpen className="size-3.5" />
@@ -229,15 +229,15 @@ function DocsPage() {
             </span>
           </div>
           
-          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-foreground font-display leading-tight">
+          <h1 className="text-3xl sm:text-4xl lg:text-6xl font-extrabold tracking-tight text-foreground font-display leading-[1.1] text-balance">
             Documentation & <span className="text-gradient-moving">Guide</span>
           </h1>
-          <p className="mt-4 text-muted-foreground text-base md:text-lg max-w-2xl leading-relaxed font-semibold">
+          <p className="mt-4 text-muted-foreground text-sm sm:text-base md:text-lg max-w-2xl leading-relaxed font-semibold">
             Master the core concepts of server-enforced digital focus. Learn how to encrypt your credentials, configure un-bypassable locked vaults, write letters to your future self, and understand the dopamine detox philosophy.
           </p>
 
           {/* Quick Search Tool */}
-          <div className="mt-8 max-w-md relative group">
+          <div className="mt-8 w-full max-w-md relative group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground size-4.5 group-hover:text-primary transition-colors" />
             <Input
               type="text"
@@ -249,32 +249,32 @@ function DocsPage() {
           </div>
         </div>
 
-        {/* Collapsible Mobile Section Menu picker (stacks below header on md screens) */}
-        <div className="md:hidden sticky top-[72px] z-40 bg-white/80 backdrop-blur-xl border border-border/60 rounded-2xl p-3 mb-6 shadow-sm">
+        {/* Collapsible Mobile Section Menu picker (stacks below header on lg screens) */}
+        <div className="lg:hidden sticky top-[65px] z-40 bg-white/70 backdrop-blur-md border border-border/40 rounded-xl p-2.5 mb-8 shadow-soft select-none">
           <button 
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="w-full flex items-center justify-between px-3 py-1 text-sm font-bold text-foreground"
+            className="w-full flex items-center justify-between px-2 py-1 text-xs font-bold text-foreground"
           >
             <span className="flex items-center gap-2">
-              <BookOpen className="size-4 text-primary" />
+              <BookOpen className="size-3.5 text-primary" />
               {SECTIONS.find(s => s.id === activeSection)?.label || 'Sections Menu'}
             </span>
-            <ChevronDown className={`size-4 text-muted-foreground transition-transform duration-200 ${mobileMenuOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`size-3.5 text-muted-foreground transition-transform duration-300 ${mobileMenuOpen ? 'rotate-180' : ''}`} />
           </button>
           
           {mobileMenuOpen && (
-            <div className="mt-3 border-t border-border/30 pt-2 flex flex-col gap-1">
+            <div className="mt-2.5 border-t border-border/30 pt-1.5 flex flex-col gap-0.5 max-h-60 overflow-y-auto">
               {SECTIONS.map((s) => (
                 <button
                   key={s.id}
                   onClick={() => scrollTo(s.id)}
-                  className={`w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2.5 ${
+                  className={`w-full text-left px-2 py-2 rounded-lg text-[11px] font-bold transition-all flex items-center gap-2 ${
                     activeSection === s.id
-                      ? 'bg-primary-soft text-primary shadow-[inset_0_1px_2px_rgba(124,58,237,0.05)]'
-                      : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+                      ? 'bg-primary-soft text-primary font-extrabold'
+                      : 'text-muted-foreground hover:bg-muted/30 hover:text-foreground'
                   }`}
                 >
-                  <s.icon className="size-3.5" />
+                  <s.icon className="size-3" />
                   {s.label}
                 </button>
               ))}
@@ -283,10 +283,10 @@ function DocsPage() {
         </div>
 
         {/* Main Grid: Sticky Sidebar + Content panel */}
-        <div className="grid md:grid-cols-12 gap-10 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
           
           {/* Left Column: Fixed Sticky Sidebar (Desktop only) */}
-          <nav className="hidden md:block md:col-span-4 lg:col-span-3 sticky top-[100px] space-y-1.5 select-none" aria-label="Documentation navigation">
+          <nav className="hidden lg:block lg:col-span-4 xl:col-span-3 sticky top-[96px] max-h-[calc(100vh-140px)] overflow-y-auto pr-2 space-y-1.5 select-none scrollbar-thin animate-fade-in" aria-label="Documentation navigation">
             <h2 className="text-[10px] font-extrabold text-muted-foreground uppercase font-mono tracking-widest pl-4 mb-4">Table of Contents</h2>
             {SECTIONS.map((s) => (
               <button
@@ -318,19 +318,19 @@ function DocsPage() {
           </nav>
 
           {/* Right Column: Content documentation panels */}
-          <div className="col-span-12 md:col-span-8 lg:col-span-9 space-y-20">
+          <div className="col-span-1 lg:col-span-8 xl:col-span-9 space-y-12 sm:space-y-20 w-full min-w-0">
             
             {/* Section 1: Welcome to TimeVault */}
             {matchesSearch(SECTIONS[0]) && (
               <section id="welcome" className="scroll-mt-28 space-y-6">
-                <div className="flex items-center gap-3 border-b border-border/30 pb-3">
-                  <div className="size-11 rounded-xl bg-primary-soft text-primary grid place-items-center shadow-sm">
+                <div className="flex items-start sm:items-center gap-3 border-b border-border/30 pb-3">
+                  <div className="size-11 rounded-xl bg-primary-soft text-primary grid place-items-center shadow-sm shrink-0">
                     <BookOpen className="size-5.5" />
                   </div>
-                  <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight font-display text-foreground">1. Welcome to TimeVault</h2>
+                  <h2 className="text-2xl lg:text-3xl font-extrabold tracking-tight font-display text-foreground">1. Welcome to TimeVault</h2>
                 </div>
 
-                <div className="space-y-4 text-muted-foreground text-sm font-medium leading-relaxed">
+                <div className="space-y-4 text-muted-foreground text-base leading-8 font-medium">
                   <p>
                     TimeVault is a premium digital self-discipline and detox suite built to save you from digital distractions and instant gratification. In a hyper-connected world, willpower is an exhaustible resource. The most effective way to resist digital temptations is not simple self-motivation; it is the establishment of <strong>absolute, server-enforced friction</strong>.
                   </p>
@@ -340,12 +340,12 @@ function DocsPage() {
                 </div>
 
                 {/* Onboarding Step Illustration Card */}
-                <div className="my-6">
+                <div className="my-6 w-full max-w-full overflow-hidden">
                   <OnboardingIllustration />
                 </div>
 
                 {/* Aesthetic Highlight Card */}
-                <div className="card-3d p-6 relative overflow-hidden group">
+                <div className="card-3d p-5 sm:p-6 relative overflow-hidden group">
                   <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent opacity-40" />
                   <div className="flex items-start gap-4 relative z-10">
                     <div className="size-10 rounded-xl bg-primary-soft text-primary grid place-items-center shrink-0">
@@ -365,21 +365,21 @@ function DocsPage() {
             {/* Section 2: Create Your First Vault */}
             {matchesSearch(SECTIONS[1]) && (
               <section id="create-vault" className="scroll-mt-28 space-y-6">
-                <div className="flex items-center gap-3 border-b border-border/30 pb-3">
-                  <div className="size-11 rounded-xl bg-primary-soft text-primary grid place-items-center shadow-sm">
+                <div className="flex items-start sm:items-center gap-3 border-b border-border/30 pb-3">
+                  <div className="size-11 rounded-xl bg-primary-soft text-primary grid place-items-center shadow-sm shrink-0">
                     <Lock className="size-5.5" />
                   </div>
-                  <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight font-display text-foreground">2. Create Your First Vault</h2>
+                  <h2 className="text-2xl lg:text-3xl font-extrabold tracking-tight font-display text-foreground">2. Create Your First Vault</h2>
                 </div>
 
-                <div className="space-y-4 text-muted-foreground text-sm font-medium leading-relaxed">
+                <div className="space-y-4 text-muted-foreground text-base leading-8 font-medium">
                   <p>
                     Securing your credentials in a locked vault takes less than two minutes. Follow this visual step-by-step layout to seal your first contract.
                   </p>
                 </div>
 
                 {/* Numbered Steps layout */}
-                <div className="grid sm:grid-cols-2 gap-5 my-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 my-6">
                   {[
                     { step: '1', title: 'Open Dashboard', desc: 'Sign in to your account and click the New Lock shortcut button.' },
                     { step: '2', title: 'Add Accounts', desc: 'Input the name of the app or account (e.g. Discord, Gaming login).' },
@@ -388,7 +388,7 @@ function DocsPage() {
                     { step: '5', title: 'Add Motivation', desc: 'Write a quick reason why you are sealing this lock to remind yourself.' },
                     { step: '6', title: 'Confirm Contract', desc: 'Review the timer. Click confirm. The vault is locked securely.' }
                   ].map((s) => (
-                    <div key={s.step} className="rounded-2xl border border-border bg-card p-5 shadow-card hover:shadow-hover hover:border-primary/10 transition-all duration-300 flex items-start gap-4">
+                    <div key={s.step} className="rounded-2xl border border-border bg-card p-4 sm:p-5 shadow-card hover:shadow-hover hover:border-primary/10 transition-all duration-300 flex items-start gap-4">
                       <span className="size-7 rounded-full bg-primary-soft text-primary grid place-items-center text-xs font-black shrink-0 font-mono">
                         {s.step}
                       </span>
@@ -402,29 +402,31 @@ function DocsPage() {
 
                 {/* Dynamic Timeline Graph for Locking process */}
                 <h3 className="text-sm font-extrabold text-muted-foreground uppercase font-mono tracking-wider mb-2">Vault Locking Timeline</h3>
-                <div className="relative border-l border-border pl-6 ml-4 space-y-6 my-4 select-none">
+                <div className="relative border-l border-border pl-6 ml-6 sm:ml-8 space-y-6 my-4 select-none">
                   {[
                     { title: 'Client Encryption', desc: 'Scrambles credentials locally using secure zero-knowledge ciphers.', badge: 'Safe' },
                     { title: 'Server Registration', desc: 'Binds dynamic unseal timer triggers on secure database rows.', badge: 'Active' },
                     { title: 'Immutable Seal', desc: 'Row constraints reject early decryptions. Zero early unseals allowed.', badge: 'Locked' }
                   ].map((t, idx) => (
                     <div key={idx} className="relative group">
-                      <div className="absolute -left-9 top-1.5 size-5 rounded-full border-2 border-primary bg-white grid place-items-center group-hover:scale-110 transition-transform">
+                      <div className="absolute left-0 -translate-x-1/2 top-1.5 size-5 rounded-full border-2 border-primary bg-white grid place-items-center group-hover:scale-110 transition-transform">
                         <div className="size-2 rounded-full bg-primary animate-pulse" />
                       </div>
-                      <div className="flex items-start justify-between gap-4 flex-wrap">
+                      <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0">
-                          <h4 className="font-bold text-foreground text-xs font-display">{t.title}</h4>
-                          <p className="text-[11px] text-muted-foreground leading-normal font-semibold mt-0.5">{t.desc}</p>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h4 className="font-bold text-foreground text-xs font-display">{t.title}</h4>
+                            <span className="px-2 py-0.5 rounded-full text-[8px] font-black font-mono bg-primary-soft text-primary uppercase shrink-0">{t.badge}</span>
+                          </div>
+                          <p className="text-[11px] text-muted-foreground leading-normal font-semibold mt-1">{t.desc}</p>
                         </div>
-                        <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black font-mono bg-primary-soft text-primary uppercase">{t.badge}</span>
                       </div>
                     </div>
                   ))}
                 </div>
 
                 {/* Dashboard Card Mockup Preview */}
-                <div className="rounded-2xl border border-border bg-white shadow-card p-6 my-8 select-none relative overflow-hidden max-w-md mx-auto">
+                <div className="rounded-2xl border border-border bg-white shadow-card p-6 my-8 select-none relative overflow-hidden w-full max-w-md mx-auto">
                   <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-primary to-amber-500" />
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-3">
@@ -450,14 +452,14 @@ function DocsPage() {
             {/* Section 3: Using Future Mail */}
             {matchesSearch(SECTIONS[2]) && (
               <section id="future-mail" className="scroll-mt-28 space-y-6">
-                <div className="flex items-center gap-3 border-b border-border/30 pb-3">
-                  <div className="size-11 rounded-xl bg-primary-soft text-primary grid place-items-center shadow-sm">
+                <div className="flex items-start sm:items-center gap-3 border-b border-border/30 pb-3">
+                  <div className="size-11 rounded-xl bg-primary-soft text-primary grid place-items-center shadow-sm shrink-0">
                     <Mail className="size-5.5" />
                   </div>
-                  <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight font-display text-foreground">3. Using Future Mail</h2>
+                  <h2 className="text-2xl lg:text-3xl font-extrabold tracking-tight font-display text-foreground">3. Using Future Mail</h2>
                 </div>
 
-                <div className="space-y-4 text-muted-foreground text-sm font-medium leading-relaxed">
+                <div className="space-y-4 text-muted-foreground text-base leading-8 font-medium">
                   <p>
                     Future Mail is a delayed motivation system that allows you to draft letters, advice, or critical warnings to your future self. 
                   </p>
@@ -468,14 +470,14 @@ function DocsPage() {
 
                 {/* Delivery Flow Timeline */}
                 <h3 className="text-sm font-extrabold text-muted-foreground uppercase font-mono tracking-wider mb-2">Delivery Flow</h3>
-                <div className="relative border-l border-border pl-6 ml-4 space-y-6 my-4 select-none">
+                <div className="relative border-l border-border pl-6 ml-6 sm:ml-8 space-y-6 my-4 select-none">
                   {[
                     { title: 'Draft Letter', desc: 'Compose thoughts in our vintage-styled stationery pad.', icon: BookOpen },
                     { title: 'Temporal Seal', desc: 'Mail is locked and stored. Contents cannot be read prior to delivery.', icon: Lock },
                     { title: 'Email Delivery', desc: 'Delivered directly to your inbox on the exact chosen minute.', icon: Mail }
                   ].map((t, idx) => (
                     <div key={idx} className="relative group">
-                      <div className="absolute -left-9 top-1.5 size-5 rounded-full border-2 border-primary bg-white grid place-items-center">
+                      <div className="absolute left-0 -translate-x-1/2 top-1.5 size-5 rounded-full border-2 border-primary bg-white grid place-items-center">
                         <t.icon className="size-2.5 text-primary" />
                       </div>
                       <div>
@@ -487,7 +489,7 @@ function DocsPage() {
                 </div>
 
                 {/* Future Mail Stationery Preview Mockup */}
-                <div className="rounded-2xl border border-border bg-[#FAF8F5] shadow-card p-6 my-8 select-none max-w-md mx-auto relative overflow-hidden">
+                <div className="rounded-2xl border border-border bg-[#FAF8F5] shadow-card p-6 my-8 select-none w-full max-w-md mx-auto relative overflow-hidden">
                   <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
                   <div className="flex items-start justify-between border-b border-border/40 pb-3 mb-4">
                     <div>
@@ -506,14 +508,14 @@ function DocsPage() {
             {/* Section 4: Trash & Recovery System */}
             {matchesSearch(SECTIONS[3]) && (
               <section id="trash-recovery" className="scroll-mt-28 space-y-6">
-                <div className="flex items-center gap-3 border-b border-border/30 pb-3">
-                  <div className="size-11 rounded-xl bg-primary-soft text-primary grid place-items-center shadow-sm">
+                <div className="flex items-start sm:items-center gap-3 border-b border-border/30 pb-3">
+                  <div className="size-11 rounded-xl bg-primary-soft text-primary grid place-items-center shadow-sm shrink-0">
                     <Trash2 className="size-5.5" />
                   </div>
-                  <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight font-display text-foreground">4. Trash & Recovery</h2>
+                  <h2 className="text-2xl lg:text-3xl font-extrabold tracking-tight font-display text-foreground">4. Trash & Recovery</h2>
                 </div>
 
-                <div className="space-y-4 text-muted-foreground text-sm font-medium leading-relaxed">
+                <div className="space-y-4 text-muted-foreground text-base leading-8 font-medium">
                   <p>
                     Accidentally deleted a locked vault or motive letter? The Trash & Recovery system holds your deleted items for exactly <strong>30 days</strong> before automatic and permanent purge processes execute.
                   </p>
@@ -528,7 +530,7 @@ function DocsPage() {
                 </div>
 
                 {/* Visual Recoverable Card Mockup */}
-                <div className="rounded-2xl border border-red-200/60 bg-red-50/5 shadow-card p-5 my-8 select-none max-w-md mx-auto relative overflow-hidden">
+                <div className="rounded-2xl border border-red-200/60 bg-red-50/5 shadow-card p-5 my-8 select-none w-full max-w-md mx-auto relative overflow-hidden">
                   <div className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-r from-red-400 to-rose-600" />
                   <div className="flex gap-4 items-start">
                     <div className="size-10 rounded-xl bg-primary-soft text-primary grid place-items-center shrink-0 border border-primary/10">
@@ -542,11 +544,11 @@ function DocsPage() {
                         </div>
                         <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black font-mono uppercase bg-red-50 border border-red-200 text-red-700 animate-pulse">3d left</span>
                       </div>
-                      <div className="flex gap-2 mt-4">
-                        <button className="h-7 px-3 text-[10px] font-bold rounded-full bg-emerald-600 text-white shadow-sm flex items-center gap-1">
+                      <div className="flex flex-wrap gap-2 mt-4">
+                        <button className="h-7 px-3 text-[10px] font-bold rounded-full bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1 flex-1 sm:flex-initial">
                           <RefreshCw className="size-3" /> Restore
                         </button>
-                        <button className="h-7 px-3 text-[10px] font-bold rounded-full border border-border hover:bg-red-50 hover:text-red-700 text-muted-foreground">
+                        <button className="h-7 px-3 text-[10px] font-bold rounded-full border border-border hover:bg-red-50 hover:text-red-700 text-muted-foreground flex-1 sm:flex-initial text-center justify-center">
                           Delete Forever
                         </button>
                       </div>
@@ -559,14 +561,14 @@ function DocsPage() {
             {/* Section 5: Security & Privacy */}
             {matchesSearch(SECTIONS[4]) && (
               <section id="security-privacy" className="scroll-mt-28 space-y-6">
-                <div className="flex items-center gap-3 border-b border-border/30 pb-3">
-                  <div className="size-11 rounded-xl bg-primary-soft text-primary grid place-items-center shadow-sm">
+                <div className="flex items-start sm:items-center gap-3 border-b border-border/30 pb-3">
+                  <div className="size-11 rounded-xl bg-primary-soft text-primary grid place-items-center shadow-sm shrink-0">
                     <Shield className="size-5.5" />
                   </div>
-                  <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight font-display text-foreground">5. Security & Privacy</h2>
+                  <h2 className="text-2xl lg:text-3xl font-extrabold tracking-tight font-display text-foreground">5. Security & Privacy</h2>
                 </div>
 
-                <div className="space-y-4 text-muted-foreground text-sm font-medium leading-relaxed">
+                <div className="space-y-4 text-muted-foreground text-base leading-8 font-medium">
                   <p>
                     Privacy is not an afterthought in TimeVault; it is an absolute technical commitment. We utilize client-side cryptography combined with row-level server constraints.
                   </p>
@@ -578,8 +580,8 @@ function DocsPage() {
                 </div>
 
                 {/* Security Feature Grid */}
-                <div className="grid sm:grid-cols-2 gap-5 my-6">
-                  <div className="rounded-2xl border border-border bg-card p-5 shadow-card flex items-start gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 my-6">
+                  <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 shadow-card flex items-start gap-4">
                     <div className="size-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 grid place-items-center shrink-0">
                       <Key className="size-4.5" />
                     </div>
@@ -588,7 +590,7 @@ function DocsPage() {
                       <p className="text-xs text-muted-foreground leading-relaxed font-semibold">Your credentials are encrypted locally in your browser session using zero-knowledge architectures before transmission.</p>
                     </div>
                   </div>
-                  <div className="rounded-2xl border border-border bg-card p-5 shadow-card flex items-start gap-4">
+                  <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 shadow-card flex items-start gap-4">
                     <div className="size-10 rounded-xl bg-violet-50 text-violet-600 border border-violet-100 grid place-items-center shrink-0">
                       <ShieldCheck className="size-4.5" />
                     </div>
@@ -600,7 +602,7 @@ function DocsPage() {
                 </div>
 
                 {/* Why lock timers cannot be bypassed alert */}
-                <div className="rounded-2xl bg-amber-50/50 border border-amber-200 p-5 flex items-start gap-3">
+                <div className="rounded-2xl bg-amber-50/50 border border-amber-200 p-4 sm:p-5 flex items-start gap-3">
                   <AlertTriangle className="size-5 text-amber-600 shrink-0 mt-0.5" />
                   <div>
                     <h4 className="font-bold text-amber-800 text-sm font-display">Timer Bypass Impossibility</h4>
@@ -615,28 +617,28 @@ function DocsPage() {
             {/* Section 6: Productivity Philosophy */}
             {matchesSearch(SECTIONS[5]) && (
               <section id="philosophy" className="scroll-mt-28 space-y-6">
-                <div className="flex items-center gap-3 border-b border-border/30 pb-3">
-                  <div className="size-11 rounded-xl bg-primary-soft text-primary grid place-items-center shadow-sm">
+                <div className="flex items-start sm:items-center gap-3 border-b border-border/30 pb-3">
+                  <div className="size-11 rounded-xl bg-primary-soft text-primary grid place-items-center shadow-sm shrink-0">
                     <Brain className="size-5.5" />
                   </div>
-                  <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight font-display text-foreground">6. Productivity Philosophy</h2>
+                  <h2 className="text-2xl lg:text-3xl font-extrabold tracking-tight font-display text-foreground">6. Productivity Philosophy</h2>
                 </div>
 
-                <div className="space-y-4 text-muted-foreground text-sm font-medium leading-relaxed">
+                <div className="space-y-4 text-muted-foreground text-base leading-8 font-medium">
                   <p>
                     Our mission is rooted in the neuroscience of focus. Distraction is not a lack of intelligence; it is a mismatch between caveman biology and modern dopamine loops. In a world designed to capture your attention for commercial metrics, self-imposed friction is your only natural defense mechanism.
                   </p>
                 </div>
 
                 {/* Minimalist Quote Deck */}
-                <div className="rounded-2xl border border-dashed border-primary/20 bg-primary-soft/30 p-6 relative overflow-hidden group">
+                <div className="rounded-2xl border border-dashed border-primary/20 bg-primary-soft/30 p-5 sm:p-6 relative overflow-hidden group">
                   <span className="absolute -right-3 -bottom-6 text-8xl font-extrabold text-primary/5 select-none font-serif">“</span>
                   <p className="text-sm font-semibold italic text-foreground/80 leading-relaxed pr-6 relative z-10 font-serif">
                     "Discipline is not a state of mind; it is a state of environment. Design your workspace to reject short-term gratification, and your future self will inevitably yield long-term success."
                   </p>
                 </div>
 
-                <div className="grid sm:grid-cols-3 gap-4 my-6 select-none">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6 select-none">
                   {[
                     { val: 'Dopamine Detox', label: 'Reset reward thresholds', color: 'text-violet-600 bg-violet-50 border-violet-100' },
                     { val: 'Delayed Return', label: 'Build long-term self trust', color: 'text-emerald-600 bg-emerald-50 border-emerald-100' },
@@ -654,11 +656,11 @@ function DocsPage() {
             {/* Section 7: Frequently Asked Questions */}
             {matchesSearch(SECTIONS[6]) && (
               <section id="faq" className="scroll-mt-28 space-y-6">
-                <div className="flex items-center gap-3 border-b border-border/30 pb-3">
-                  <div className="size-11 rounded-xl bg-primary-soft text-primary grid place-items-center shadow-sm">
+                <div className="flex items-start sm:items-center gap-3 border-b border-border/30 pb-3">
+                  <div className="size-11 rounded-xl bg-primary-soft text-primary grid place-items-center shadow-sm shrink-0">
                     <HelpCircle className="size-5.5" />
                   </div>
-                  <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight font-display text-foreground">7. Frequently Asked Questions</h2>
+                  <h2 className="text-2xl lg:text-3xl font-extrabold tracking-tight font-display text-foreground">7. Frequently Asked Questions</h2>
                 </div>
 
                 <div className="space-y-4">
@@ -668,7 +670,7 @@ function DocsPage() {
                       <div key={idx} className="rounded-2xl border border-border bg-card overflow-hidden transition-all duration-300">
                         <button
                           onClick={() => setOpenFaq(isOpen ? null : idx)}
-                          className="w-full flex items-center justify-between px-6 py-4.5 text-left font-bold text-sm text-foreground hover:bg-muted/40 transition-colors"
+                          className="w-full flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4.5 text-left font-bold text-sm text-foreground hover:bg-muted/40 transition-colors"
                         >
                           <span className="pr-4">{faq.q}</span>
                           <ChevronDown className={`size-4 text-muted-foreground shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180 text-primary' : ''}`} />
@@ -676,9 +678,9 @@ function DocsPage() {
                         
                         {/* Expandable answer panel */}
                         <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                          isOpen ? 'max-h-60 border-t border-border/40' : 'max-h-0'
+                          isOpen ? 'max-h-[500px] border-t border-border/40' : 'max-h-0'
                         }`}>
-                          <p className="px-6 py-5 text-xs text-muted-foreground leading-relaxed font-semibold bg-muted/20">
+                          <p className="px-4 sm:px-6 py-4 sm:py-5 text-xs text-muted-foreground leading-relaxed font-semibold bg-muted/20">
                             {faq.a}
                           </p>
                         </div>
@@ -690,8 +692,8 @@ function DocsPage() {
             )}
 
             {/* Support Copyable card */}
-            <div className="rounded-2xl border border-dashed border-border/80 bg-muted/10 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
+            <div className="rounded-2xl border border-dashed border-border/80 bg-muted/10 p-4 sm:p-6 flex flex-col sm:flex-row items-center text-center sm:text-left justify-between gap-4 w-full">
+              <div className="flex flex-col sm:flex-row items-center gap-3">
                 <div className="size-11 rounded-xl bg-primary-soft text-primary grid place-items-center shrink-0">
                   <HelpCircle className="size-5" />
                 </div>
@@ -703,17 +705,17 @@ function DocsPage() {
               
               <button 
                 onClick={handleCopyEmail}
-                className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-xs font-bold bg-white hover:bg-muted transition-colors relative select-none shrink-0 border-primary/10"
+                className="inline-flex items-center gap-2 rounded-full border border-border px-3 sm:px-5 py-2 sm:py-2.5 text-[10px] sm:text-xs font-bold bg-white hover:bg-muted transition-colors relative select-none shrink-0 border-primary/10 w-full sm:w-auto justify-center max-w-full overflow-hidden"
               >
                 {copiedEmail ? (
                   <>
-                    <Check className="size-3.5 text-emerald-600" />
-                    <span className="text-emerald-700 font-mono">support.timevault@gmail.com</span>
+                    <Check className="size-3.5 text-emerald-600 shrink-0" />
+                    <span className="text-emerald-700 font-mono text-[10px] sm:text-xs truncate">support.timevault@gmail.com</span>
                   </>
                 ) : (
                   <>
-                    <Copy className="size-3.5 text-muted-foreground" />
-                    <span className="text-muted-foreground font-mono">support.timevault@gmail.com</span>
+                    <Copy className="size-3.5 text-muted-foreground shrink-0" />
+                    <span className="text-muted-foreground font-mono text-[10px] sm:text-xs truncate">support.timevault@gmail.com</span>
                   </>
                 )}
               </button>
@@ -728,7 +730,7 @@ function DocsPage() {
       {/* Floating Back to Top Button */}
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        className={`fixed bottom-6 right-6 size-11 rounded-full bg-gradient-primary text-primary-foreground shadow-glow grid place-items-center z-50 transition-all duration-500 hover:scale-105 border border-primary/20 ${
+        className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 size-10 sm:size-11 rounded-full bg-gradient-primary text-primary-foreground shadow-glow grid place-items-center z-50 transition-all duration-500 hover:scale-105 border border-primary/20 ${
           showBackToTop ? 'translate-y-0 opacity-100' : 'translate-y-16 opacity-0 pointer-events-none'
         }`}
         aria-label="Back to top"

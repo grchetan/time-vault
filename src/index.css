@@ -1,6 +1,7 @@
 /* Base reset only — design system lives in styles.css */
 body {
   margin: 0;
+  overflow-x: hidden;
 }
 
 #root {
