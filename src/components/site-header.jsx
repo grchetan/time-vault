@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { label: 'Features', to: '/features' },
   { label: 'About', to: '/about' },
   { label: 'Contact', to: '/contact' },
+  { label: 'Guide', to: '/docs' },
 ];
 
 export function SiteHeader() {
