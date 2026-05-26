@@ -5,7 +5,7 @@ import {
   createRootRouteWithContext,
   useRouter,
 } from '@tanstack/react-router';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 import { AuthProvider } from '@/lib/auth';
@@ -143,11 +143,59 @@ export const Route = createRootRouteWithContext()({
   errorComponent: ErrorComponent,
 });
 
+/* ── Click Spark Ripple effect ─────────────────────────────────────── */
+function ClickSparkEffect() {
+  const [sparks, setSparks] = useState([])
+
+  useEffect(() => {
+    const handleMouseDown = (e) => {
+      const id = Date.now() + Math.random()
+      const newSpark = {
+        id,
+        x: e.clientX,
+        y: e.clientY
+      }
+      
+      // Strict memory capping (slice to 8 sparks) to ensure absolute scrolling fluidity
+      setSparks((prev) => [...prev.slice(-7), newSpark])
+
+      setTimeout(() => {
+        setSparks((prev) => prev.filter((s) => s.id !== id))
+      }, 500)
+    }
+
+    window.addEventListener('mousedown', handleMouseDown, { passive: true })
+    return () => window.removeEventListener('mousedown', handleMouseDown)
+  }, [])
+
+  return (
+    <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+      {sparks.map((spark) => (
+        <div
+          key={spark.id}
+          className="absolute flex items-center justify-center pointer-events-none"
+          style={{ left: spark.x, top: spark.y }}
+        >
+          {/* Subtle ripple expanding ring */}
+          <div className="absolute w-10 h-10 rounded-full border border-primary/30 -translate-x-1/2 -translate-y-1/2 animate-spark-ripple" />
+          
+          {/* Directional spark glow particles */}
+          <div className="absolute w-1 h-1 rounded-full bg-primary/70 blur-[0.5px] -translate-x-1/2 -translate-y-1/2 animate-spark-particle-0" />
+          <div className="absolute w-1 h-1 rounded-full bg-violet-400/70 blur-[0.5px] -translate-x-1/2 -translate-y-1/2 animate-spark-particle-1" />
+          <div className="absolute w-1 h-1 rounded-full bg-indigo-400/70 blur-[0.5px] -translate-x-1/2 -translate-y-1/2 animate-spark-particle-2" />
+          <div className="absolute w-1 h-1 rounded-full bg-emerald-400/70 blur-[0.5px] -translate-x-1/2 -translate-y-1/2 animate-spark-particle-3" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function AppLayout() {
   const { loading } = useAuth();
   return (
     <div className="relative min-h-screen flex flex-col">
       <AnimatedBackground />
+      <ClickSparkEffect />
       <div className="relative z-10 flex flex-col min-h-screen">
         <SiteHeader />
         <main className="flex-1">

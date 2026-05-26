@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @import "tailwindcss" source(none);
 @source "../src";
@@ -60,66 +60,64 @@
   --color-mint: var(--mint);
   --color-mint-foreground: var(--mint-foreground);
   --color-primary-soft: var(--primary-soft);
-  --font-display: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Geist', 'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
-  --radius: 1.25rem;
-  --background: oklch(0.995 0.003 280);
-  --foreground: oklch(0.18 0.04 280);
+  --radius: 0.5rem;
+  --background: oklch(0.99 0.002 240);
+  --foreground: oklch(0.22 0.015 240);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.18 0.04 280);
+  --card-foreground: oklch(0.22 0.015 240);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.18 0.04 280);
-  --primary: oklch(0.58 0.18 290);
-  --primary-foreground: oklch(0.99 0.01 280);
-  --primary-soft: oklch(0.95 0.04 290);
-  --secondary: oklch(0.93 0.05 200);
-  --secondary-foreground: oklch(0.25 0.06 240);
-  --muted: oklch(0.97 0.01 280);
-  --muted-foreground: oklch(0.52 0.03 280);
-  --accent: oklch(0.93 0.07 30);
-  --accent-foreground: oklch(0.3 0.06 30);
-  --mint: oklch(0.93 0.07 165);
-  --mint-foreground: oklch(0.3 0.07 165);
-  --destructive: oklch(0.58 0.22 25);
-  --destructive-foreground: oklch(0.99 0.01 0);
-  --border: oklch(0.92 0.015 280);
-  --input: oklch(0.95 0.01 280);
-  --ring: oklch(0.58 0.18 290);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
+  --popover-foreground: oklch(0.22 0.015 240);
+  --primary: oklch(0.50 0.12 280);
+  --primary-foreground: oklch(0.99 0.002 280);
+  --primary-soft: oklch(0.975 0.005 280);
+  --secondary: oklch(0.96 0.005 240);
+  --secondary-foreground: oklch(0.35 0.01 240);
+  --muted: oklch(0.97 0.003 240);
+  --muted-foreground: oklch(0.55 0.01 240);
+  --accent: oklch(0.96 0.005 240);
+  --accent-foreground: oklch(0.35 0.01 240);
+  --mint: oklch(0.96 0.008 165);
+  --mint-foreground: oklch(0.38 0.02 165);
+  --destructive: oklch(0.52 0.16 25);
+  --destructive-foreground: oklch(0.99 0.002 0);
+  --border: oklch(0.94 0.005 240);
+  --input: oklch(0.96 0.003 240);
+  --ring: oklch(0.50 0.12 280);
+  --chart-1: oklch(0.50 0.12 280);
+  --chart-2: oklch(0.38 0.02 165);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.984 0.003 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.208 0.042 265.755);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.968 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
+  --sidebar: oklch(0.99 0.002 240);
+  --sidebar-foreground: oklch(0.22 0.015 240);
+  --sidebar-primary: oklch(0.50 0.12 280);
+  --sidebar-primary-foreground: oklch(0.99 0.002 280);
+  --sidebar-accent: oklch(0.96 0.005 240);
+  --sidebar-accent-foreground: oklch(0.22 0.015 240);
+  --sidebar-border: oklch(0.94 0.005 240);
+  --sidebar-ring: oklch(0.50 0.12 280);
 
   /* Mouse-reactive background */
   --mouse-x: 50%;
   --mouse-y: 50%;
 
   /* Gradients */
-  --gradient-hero: radial-gradient(ellipse at top left, oklch(0.94 0.06 290 / 0.6) 0%, transparent 50%),
-                   radial-gradient(ellipse at top right, oklch(0.93 0.05 200 / 0.5) 0%, transparent 50%),
-                   radial-gradient(ellipse at bottom center, oklch(0.95 0.06 30 / 0.4) 0%, transparent 60%),
-                   oklch(0.995 0.003 280);
-  --gradient-soft: linear-gradient(135deg, oklch(0.97 0.025 290), oklch(0.97 0.025 200));
-  --gradient-mesh: radial-gradient(ellipse at var(--mouse-x) var(--mouse-y), oklch(0.93 0.06 290 / 0.12) 0%, transparent 60%);
-  --gradient-primary: linear-gradient(135deg, oklch(0.58 0.18 290), oklch(0.52 0.2 310));
+  --gradient-hero: radial-gradient(ellipse at top, oklch(0.97 0.02 280 / 0.4) 0%, transparent 60%),
+                   oklch(0.99 0.002 240);
+  --gradient-soft: linear-gradient(135deg, oklch(0.985 0.002 280), oklch(0.975 0.003 240));
+  --gradient-mesh: radial-gradient(ellipse at var(--mouse-x) var(--mouse-y), oklch(0.50 0.12 280 / 0.04) 0%, transparent 60%);
+  --gradient-primary: linear-gradient(135deg, oklch(0.50 0.12 280), oklch(0.44 0.14 290));
 
   /* Shadows */
-  --shadow-soft: 0 10px 40px -15px oklch(0.58 0.18 290 / 0.3);
-  --shadow-card: 0 2px 20px -4px oklch(0.5 0.05 280 / 0.1), 0 1px 4px -1px oklch(0.5 0.05 280 / 0.08);
-  --shadow-glow: 0 0 30px -5px oklch(0.58 0.18 290 / 0.4);
-  --shadow-hover: 0 16px 48px -12px oklch(0.58 0.18 290 / 0.25);
+  --shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.03);
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px 0 rgba(0, 0, 0, 0.02);
+  --shadow-glow: 0 0 20px -3px oklch(0.50 0.12 280 / 0.15);
+  --shadow-hover: 0 12px 40px -10px oklch(0.22 0.015 240 / 0.08);
 }
 
 .dark {
@@ -468,4 +466,49 @@
   outline: 2px solid oklch(0.58 0.18 290 / 0.6);
   outline-offset: 2px;
   border-radius: 4px;
+}
+
+/* ⚡ Click Spark Animations */
+@keyframes spark-ripple {
+  0% {
+    transform: scale(0.2);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+@keyframes spark-particle-0 {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(-24px, -24px) scale(0.2); opacity: 0; }
+}
+@keyframes spark-particle-1 {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(24px, -24px) scale(0.2); opacity: 0; }
+}
+@keyframes spark-particle-2 {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(24px, 24px) scale(0.2); opacity: 0; }
+}
+@keyframes spark-particle-3 {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(-24px, 24px) scale(0.2); opacity: 0; }
+}
+
+.animate-spark-ripple {
+  animation: spark-ripple 0.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+}
+.animate-spark-particle-0 {
+  animation: spark-particle-0 0.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+}
+.animate-spark-particle-1 {
+  animation: spark-particle-1 0.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+}
+.animate-spark-particle-2 {
+  animation: spark-particle-2 0.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+}
+.animate-spark-particle-3 {
+  animation: spark-particle-3 0.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
 }
