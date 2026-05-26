@@ -113,9 +113,9 @@ function LoginPage() {
       {/* Left panel — decorative, hidden on mobile */}
       <div className="hidden lg:flex lg:w-2/5 bg-gradient-primary relative overflow-hidden flex-col justify-between p-12">
         {/* Decorative blobs */}
-        <div className="absolute top-0 left-0 size-64 rounded-full bg-white/10 -translate-x-1/2 -translate-y-1/2 blur-3xl" />
-        <div className="absolute bottom-0 right-0 size-56 rounded-full bg-white/10 translate-x-1/2 translate-y-1/2 blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 size-40 rounded-full bg-white/5 -translate-x-1/2 -translate-y-1/2 blur-2xl" />
+        <div className="absolute top-0 left-0 size-64 rounded-full bg-white/10 -translate-x-1/2 -translate-y-1/2 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 right-0 size-56 rounded-full bg-white/10 translate-x-1/2 translate-y-1/2 blur-3xl pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 size-40 rounded-full bg-white/5 -translate-x-1/2 -translate-y-1/2 blur-2xl pointer-events-none" />
 
         <div className="relative z-10">
           <div className="flex items-center gap-2.5 font-bold text-xl text-white mb-2">

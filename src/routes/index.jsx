@@ -441,8 +441,8 @@ function Index() {
       <section className="container mx-auto max-w-5xl px-5 pb-28">
         <div className="relative rounded-3xl overflow-hidden bg-gradient-primary text-primary-foreground p-12 md:p-16 text-center shadow-soft">
           {/* Decorative blobs inside CTA */}
-          <div className="absolute top-0 left-0 size-48 rounded-full bg-white/10 -translate-x-1/2 -translate-y-1/2 blur-3xl" />
-          <div className="absolute bottom-0 right-0 size-56 rounded-full bg-white/10 translate-x-1/2 translate-y-1/2 blur-3xl" />
+          <div className="absolute top-0 left-0 size-48 rounded-full bg-white/10 -translate-x-1/2 -translate-y-1/2 blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 right-0 size-56 rounded-full bg-white/10 translate-x-1/2 translate-y-1/2 blur-3xl pointer-events-none" />
           <div className="relative z-10">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
               Your time is calling.

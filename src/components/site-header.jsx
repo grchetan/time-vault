@@ -51,7 +51,7 @@ export function SiteHeader() {
         >
           <div className="relative size-9 flex items-center justify-center">
             {/* Background glowing layer */}
-            <div className="absolute inset-0 bg-primary/20 rounded-xl blur-md scale-95 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="absolute inset-0 bg-primary/20 rounded-xl blur-md scale-95 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
             
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" className="size-9 drop-shadow-sm group-hover:scale-105 transition-transform duration-300">
               <defs>
@@ -144,7 +144,7 @@ export function SiteHeader() {
                 className="relative px-5 py-2 rounded-full text-sm font-semibold bg-gradient-primary text-primary-foreground hover:opacity-95 transition-all duration-300 shadow-soft hover:shadow-glow overflow-hidden group/btn"
               >
                 <span className="relative z-10">Get started</span>
-                <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000 ease-out" />
+                <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000 ease-out pointer-events-none" />
               </Link>
             </>
           )}
