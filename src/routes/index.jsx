@@ -23,6 +23,7 @@ import lockImg from '@/assets/img3.png';
 import mailImg from '@/assets/img4.png';
 import { BilingualNotice } from '@/components/bilingual-notice';
 import { useEffect, useRef } from 'react';
+import { LiquidWave } from '@/components/liquid-wave';
 
 export const Route = createFileRoute('/')(
   { component: Index }
@@ -99,7 +100,7 @@ function Index() {
               <Button
                 asChild
                 size="lg"
-                className="rounded-full shadow-soft hover:shadow-glow bg-gradient-primary hover:opacity-95 text-base font-semibold transition-all duration-300 transform hover:-translate-y-0.5 group px-7 py-6"
+                className="rounded-full shadow-soft hover:shadow-glow bg-gradient-primary hover:opacity-95 text-base font-semibold transition-all duration-300 transform hover:-translate-y-0.5 group px-7 py-6 btn-magnetic"
               >
                 <Link to="/login">
                   Start your first lock
@@ -110,7 +111,7 @@ function Index() {
                 asChild
                 size="lg"
                 variant="outline"
-                className="rounded-full border-border/80 hover:border-primary/30 hover:bg-primary-soft/30 hover:text-primary text-base font-semibold transition-all duration-300 transform hover:-translate-y-0.5 px-7 py-6"
+                className="rounded-full border-border/80 hover:border-primary/30 hover:bg-primary-soft/30 hover:text-primary text-base font-semibold transition-all duration-300 transform hover:-translate-y-0.5 px-7 py-6 btn-magnetic"
               >
                 <Link to="/features">See how it works</Link>
               </Button>
@@ -174,17 +175,19 @@ function Index() {
               <span className="text-xs font-extrabold text-foreground font-display tracking-tight">AES-256 Shield</span>
             </div>
 
-            {/* Cartoon illustration with glowing glass wrap */}
-            <div className="relative group/ill transform hover:scale-[1.01] transition-transform duration-500 z-10">
-              <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-secondary/15 rounded-3xl blur-2xl opacity-0 group-hover/ill:opacity-100 transition-opacity duration-700 pointer-events-none" />
-              <img
-                src={heroImg}
-                alt="Cartoon productivity meditating character lock representing focus"
-                width={640}
-                height={640}
-                className="relative w-full max-w-md mx-auto animate-float drop-shadow-2xl z-10"
-              />
-            </div>
+            {/* Cartoon illustration with glowing glass wrap wrapped in LiquidWave */}
+            <LiquidWave isIllustration={true} className="z-10 w-full max-w-md mx-auto rounded-3xl">
+              <div className="relative group/ill z-10">
+                <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-secondary/15 rounded-3xl blur-2xl opacity-0 group-hover/ill:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                <img
+                  src={heroImg}
+                  alt="Cartoon productivity meditating character lock representing focus"
+                  width={640}
+                  height={640}
+                  className="relative w-full animate-float drop-shadow-2xl z-10"
+                />
+              </div>
+            </LiquidWave>
           </div>
         </div>
       </section>
@@ -245,14 +248,16 @@ function Index() {
           ref={focusRef}
           className="reveal container mx-auto max-w-6xl px-5 py-24 grid md:grid-cols-2 gap-14 items-center"
         >
-          <img
-            src={focusImg}
-            alt="A focused person in a calm environment"
-            loading="lazy"
-            width={512}
-            height={512}
-            className="w-full max-w-sm mx-auto drop-shadow-xl"
-          />
+          <LiquidWave isIllustration={true} className="w-full max-w-sm mx-auto rounded-3xl">
+            <img
+              src={focusImg}
+              alt="A focused person in a calm environment"
+              loading="lazy"
+              width={512}
+              height={512}
+              className="w-full drop-shadow-xl"
+            />
+          </LiquidWave>
           <div className="space-y-6">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
               Distraction is a habit.{' '}
@@ -364,7 +369,7 @@ function Index() {
           </div>
 
           <div className="text-center mt-12">
-            <Button asChild size="lg" className="rounded-full bg-gradient-primary hover:opacity-90 shadow-soft hover:shadow-glow transition-all duration-200 group">
+            <Button asChild size="lg" className="rounded-full bg-gradient-primary hover:opacity-90 shadow-soft hover:shadow-glow transition-all duration-200 group btn-magnetic">
               <Link to="/login">
                 Start your first lock
                 <ArrowRight className="ml-1.5 size-4 group-hover:translate-x-0.5 transition-transform" />
@@ -401,28 +406,33 @@ function Index() {
               />
             </div>
           </div>
-          <img
-            src={lockImg}
-            alt="A friendly padlock with a built-in clock"
-            loading="lazy"
-            width={512}
-            height={512}
-            className="order-1 md:order-2 w-full max-w-sm mx-auto drop-shadow-xl"
-          />
+          <LiquidWave isIllustration={true} className="order-1 md:order-2 w-full max-w-sm mx-auto rounded-3xl">
+            <img
+              src={lockImg}
+              alt="A friendly padlock with a built-in clock"
+              loading="lazy"
+              width={512}
+              height={512}
+              className="w-full drop-shadow-xl"
+            />
+          </LiquidWave>
         </div>
       </section>
 
       {/* ── Future Mail ───────────────────────────────────────────────── */}
       <section className="container mx-auto max-w-6xl px-5 py-24 grid md:grid-cols-2 gap-14 items-center">
-        <img
-          ref={mailRef}
-          src={mailImg}
-          alt="An envelope with wings carrying a heart"
-          loading="lazy"
-          width={512}
-          height={512}
-          className="reveal w-full max-w-sm mx-auto drop-shadow-xl"
-        />
+        <div ref={mailRef} className="reveal w-full max-w-sm mx-auto">
+          <LiquidWave isIllustration={true} className="w-full rounded-3xl">
+            <img
+              src={mailImg}
+              alt="An envelope with wings carrying a heart"
+              loading="lazy"
+              width={512}
+              height={512}
+              className="w-full drop-shadow-xl"
+            />
+          </LiquidWave>
+        </div>
         <div className="space-y-6">
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
             A letter from your past self.
@@ -431,7 +441,7 @@ function Index() {
             Write the thing you wish someone would say to you in six months.
             We'll keep it safe and email it back to you — to the moment you need it.
           </p>
-          <Button asChild size="lg" className="rounded-full bg-gradient-primary hover:opacity-90 shadow-soft hover:shadow-glow transition-all duration-200">
+          <Button asChild size="lg" className="rounded-full bg-gradient-primary hover:opacity-90 shadow-soft hover:shadow-glow transition-all duration-200 btn-magnetic">
             <Link to="/login">Write your first letter</Link>
           </Button>
         </div>
@@ -454,7 +464,7 @@ function Index() {
               asChild
               size="lg"
               variant="secondary"
-              className="mt-7 rounded-full bg-white text-primary hover:bg-white/90 shadow-lg transition-all duration-200 font-semibold group"
+              className="mt-7 rounded-full bg-white text-primary hover:bg-white/90 shadow-lg transition-all duration-200 font-semibold group btn-magnetic"
             >
               <Link to="/login">
                 Get started — it's free

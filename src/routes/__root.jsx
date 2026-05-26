@@ -143,47 +143,81 @@ export const Route = createRootRouteWithContext()({
   errorComponent: ErrorComponent,
 });
 
-/* ── Click Spark Ripple effect ─────────────────────────────────────── */
-function ClickSparkEffect() {
+/* ── Premium Click Spark ────────────────────────────────────────────── */
+const SPARK_COLORS = [
+  'oklch(0.58 0.18 290)',  // primary purple
+  'oklch(0.62 0.16 270)',  // violet
+  'oklch(0.55 0.14 310)',  // indigo
+  'oklch(0.65 0.12 260)',  // soft indigo
+  'oklch(0.60 0.16 285)',  // mid purple
+  'oklch(0.70 0.10 295)',  // light purple
+  'oklch(0.62 0.13 275)',  // blue-violet
+  'oklch(0.58 0.15 300)',  // deep violet
+]
+
+// Radial directions for 8 particles (degrees)
+const PARTICLE_ANGLES = [0, 45, 90, 135, 180, 225, 270, 315]
+
+function PremiumClickSpark() {
   const [sparks, setSparks] = useState([])
 
   useEffect(() => {
-    const handleMouseDown = (e) => {
+    const handleClick = (e) => {
       const id = Date.now() + Math.random()
-      const newSpark = {
-        id,
-        x: e.clientX,
-        y: e.clientY
-      }
-      
-      // Strict memory capping (slice to 8 sparks) to ensure absolute scrolling fluidity
-      setSparks((prev) => [...prev.slice(-7), newSpark])
-
-      setTimeout(() => {
-        setSparks((prev) => prev.filter((s) => s.id !== id))
-      }, 500)
+      setSparks((prev) => [...prev.slice(-9), { id, x: e.clientX, y: e.clientY }])
+      setTimeout(() => setSparks((prev) => prev.filter((s) => s.id !== id)), 700)
     }
-
-    window.addEventListener('mousedown', handleMouseDown, { passive: true })
-    return () => window.removeEventListener('mousedown', handleMouseDown)
+    window.addEventListener('mousedown', handleClick, { passive: true })
+    return () => window.removeEventListener('mousedown', handleClick)
   }, [])
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+    <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden" aria-hidden="true">
       {sparks.map((spark) => (
         <div
           key={spark.id}
-          className="absolute flex items-center justify-center pointer-events-none"
-          style={{ left: spark.x, top: spark.y }}
+          className="absolute"
+          style={{ left: spark.x, top: spark.y, transform: 'translate(-50%, -50%)' }}
         >
-          {/* Subtle ripple expanding ring */}
-          <div className="absolute w-10 h-10 rounded-full border border-primary/30 -translate-x-1/2 -translate-y-1/2 animate-spark-ripple" />
-          
-          {/* Directional spark glow particles */}
-          <div className="absolute w-1 h-1 rounded-full bg-primary/70 blur-[0.5px] -translate-x-1/2 -translate-y-1/2 animate-spark-particle-0" />
-          <div className="absolute w-1 h-1 rounded-full bg-violet-400/70 blur-[0.5px] -translate-x-1/2 -translate-y-1/2 animate-spark-particle-1" />
-          <div className="absolute w-1 h-1 rounded-full bg-indigo-400/70 blur-[0.5px] -translate-x-1/2 -translate-y-1/2 animate-spark-particle-2" />
-          <div className="absolute w-1 h-1 rounded-full bg-emerald-400/70 blur-[0.5px] -translate-x-1/2 -translate-y-1/2 animate-spark-particle-3" />
+          {/* Layer 1: Outer soft glow ring — blurred, expands wide */}
+          <div className="absolute inset-0 rounded-full animate-spark-glow-ring"
+            style={{
+              width: 48, height: 48,
+              marginLeft: -24, marginTop: -24,
+              background: 'radial-gradient(circle, oklch(0.58 0.18 290 / 0.35) 0%, transparent 70%)',
+              filter: 'blur(6px)',
+            }}
+          />
+          {/* Layer 2: Crisp expanding border ring */}
+          <div className="absolute inset-0 rounded-full border border-[oklch(0.58_0.18_290/0.45)] animate-spark-crisp-ring"
+            style={{ width: 28, height: 28, marginLeft: -14, marginTop: -14 }}
+          />
+          {/* Layer 3: Second larger crisp ring with slight delay */}
+          <div className="absolute inset-0 rounded-full border border-[oklch(0.62_0.16_270/0.25)] animate-spark-crisp-ring-lg"
+            style={{ width: 44, height: 44, marginLeft: -22, marginTop: -22 }}
+          />
+          {/* Layer 4: 8 radial micro-particles */}
+          {PARTICLE_ANGLES.map((angle, i) => {
+            const rad = (angle * Math.PI) / 180
+            const dist = 20 + (i % 3) * 6 // vary distance: 20px, 26px, 32px
+            const size = i % 2 === 0 ? 3 : 2
+            return (
+              <div
+                key={angle}
+                className="absolute rounded-full animate-spark-particle"
+                style={{
+                  width: size,
+                  height: size,
+                  marginLeft: -size / 2,
+                  marginTop: -size / 2,
+                  background: SPARK_COLORS[i],
+                  animationDelay: `${i * 12}ms`,
+                  '--tx': `${Math.cos(rad) * dist}px`,
+                  '--ty': `${Math.sin(rad) * dist}px`,
+                }}
+              />
+            )
+          })}
         </div>
       ))}
     </div>
@@ -195,7 +229,7 @@ function AppLayout() {
   return (
     <div className="relative min-h-screen flex flex-col">
       <AnimatedBackground />
-      <ClickSparkEffect />
+      <PremiumClickSpark />
       <div className="relative z-10 flex flex-col min-h-screen">
         <SiteHeader />
         <main className="flex-1">

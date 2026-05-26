@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,13 +12,14 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import {
-  Lock, Plus, Eye, EyeOff, Unlock, Copy, Check, Trash2, Timer, AlertTriangle, Search, ShieldCheck, ChevronRight, KeyRound
+  Lock, Plus, Eye, EyeOff, Unlock, Copy, Check, Trash2, Timer, AlertTriangle, Search, ShieldCheck, ChevronRight, KeyRound, ChevronLeft
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth'
 import { auth } from '@/lib/firebase'
 import { createVault, getVaults, revealPassword, deleteVault } from '@/lib/vault'
 import { encryptPassword, decryptPassword } from '@/lib/crypto'
 import { toast } from 'sonner'
+import { LiquidWave } from '@/components/liquid-wave'
 
 export const Route = createFileRoute('/_authenticated/vault')({
   validateSearch: (search) => ({
@@ -54,21 +55,21 @@ function formatCountdown(ms) {
 function DeleteDialog({ open, onOpenChange, vaultName, onConfirm, loading }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm rounded-3xl p-6">
+      <DialogContent className="max-w-sm rounded-xl p-6">
         <DialogHeader>
-          <div className="size-14 rounded-2xl bg-destructive/10 text-destructive grid place-items-center mx-auto mb-4 border border-destructive/20 animate-pulse">
+          <div className="size-14 rounded-xl bg-destructive/10 text-destructive grid place-items-center mx-auto mb-4 border border-destructive/20 animate-pulse">
             <Trash2 className="size-6" />
           </div>
           <DialogTitle className="text-center font-display font-extrabold text-xl">Delete this vault?</DialogTitle>
-          <DialogDescription className="text-center text-sm text-muted-foreground mt-2">
-            The lock <strong className="text-foreground">"{vaultName}"</strong> and all its passwords will be permanently deleted. This cannot be undone.
+          <DialogDescription className="text-center text-sm text-muted-foreground mt-2 leading-relaxed">
+            The lock <strong className="text-foreground">"{vaultName}"</strong> and all its passwords will be moved to the Trash recovery system. You can restore them anytime within 30 days.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex-row gap-3 sm:flex-row mt-4">
-          <Button variant="outline" className="flex-1 rounded-full font-bold" onClick={() => onOpenChange(false)} disabled={loading}>
+          <Button variant="outline" className="flex-1 rounded-full font-bold btn-magnetic" onClick={() => onOpenChange(false)} disabled={loading}>
             Cancel
           </Button>
-          <Button variant="destructive" className="flex-1 rounded-full font-bold shadow-soft" onClick={onConfirm} disabled={loading}>
+          <Button variant="destructive" className="flex-1 rounded-full font-bold shadow-soft btn-magnetic" onClick={onConfirm} disabled={loading}>
             {loading ? 'Deleting…' : 'Delete Vault'}
           </Button>
         </DialogFooter>
@@ -101,7 +102,7 @@ function VaultCard({ vault, onDeleted }) {
     if (revealed) { setRevealed(null); return }
     setLoading(true); setError('')
     try {
-      const token = await auth.currentUser.getIdToken()
+      const token = await auth.currentUser.getIdToken(true)
       const res = await revealPassword(token, vault.id)
       const decrypted = await Promise.all(
         res.passwords.map(async (pw) => ({ label: pw.label, text: await decryptPassword(pw) }))
@@ -109,20 +110,22 @@ function VaultCard({ vault, onDeleted }) {
       setRevealed(decrypted)
     } catch (e) {
       setError(e.message || 'Something went wrong')
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   const handleDelete = async () => {
     setDeleting(true)
     try {
-      const token = await auth.currentUser.getIdToken()
+      const token = await auth.currentUser.getIdToken(true)
       await deleteVault(token, vault.id)
-      onDeleted(vault.id)
-      toast.success('Vault deleted successfully')
+      toast.success('Vault moved to Trash', { description: 'Recoverable from Trash for 30 days.' })
       setDeleteOpen(false)
+      onDeleted(vault.id)
     } catch (e) {
       setError(e.message || 'Delete failed')
+    } finally {
       setDeleting(false)
     }
   }
@@ -143,10 +146,10 @@ function VaultCard({ vault, onDeleted }) {
         loading={deleting}
       />
 
-      <div className={`rounded-3xl bg-card border p-6 shadow-card flex gap-5 transition-all duration-300 hover:shadow-hover relative overflow-hidden group ${
+      <div className={`p-4 sm:p-6 flex gap-3 sm:gap-5 relative overflow-hidden group ${
         isUnlocked 
-          ? 'border-emerald-200 bg-emerald-50/10' 
-          : 'border-border'
+          ? 'card-3d border-emerald-200/60 bg-emerald-50/10 dark:bg-emerald-950/5 hover:border-emerald-300/80 cursor-default' 
+          : 'card-3d-inset bg-muted/10 dark:bg-muted/5 border-border hover:border-primary/20'
       }`}>
         <div className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-primary to-secondary opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
         
@@ -181,28 +184,30 @@ function VaultCard({ vault, onDeleted }) {
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <div className="font-extrabold text-base tracking-tight text-foreground group-hover:text-primary transition-colors duration-200">
+          <div className="flex items-start justify-between gap-2">
+            {/* Title + meta — shrinks and truncates on narrow screens */}
+            <div className="min-w-0 flex-1">
+              <div className="font-extrabold text-sm sm:text-base tracking-tight text-foreground group-hover:text-primary transition-colors duration-200 truncate">
                 {vault.name}
               </div>
-              <div className="text-xs text-muted-foreground mt-0.5 font-medium">
+              <div className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 font-medium truncate">
                 {vault.duration_label} Lock &middot; {new Date(vault.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
               </div>
               {vault.reason && (
-                <div className="rounded-xl border border-border/40 bg-muted/30 px-3 py-1.5 mt-2.5 text-xs text-muted-foreground leading-normal italic font-medium pr-5 relative max-w-sm">
-                  <span className="absolute right-2 top-1.5 text-lg font-serif opacity-10 select-none">”</span>
-                  "{vault.reason}"
+                <div className="rounded-xl border border-border/40 bg-muted/30 px-2.5 sm:px-3 py-1.5 mt-2 sm:mt-2.5 text-xs text-muted-foreground leading-normal italic font-medium relative overflow-hidden">
+                  <span className="absolute right-2 top-1 text-lg font-serif opacity-10 select-none pointer-events-none">”</span>
+                  <span className="block truncate">"{vault.reason}"</span>
                 </div>
               )}
             </div>
-            
+
+            {/* Delete button — never shrinks off-screen */}
             <button
               onClick={() => setDeleteOpen(true)}
-              className="text-muted-foreground hover:text-destructive p-2 rounded-xl hover:bg-destructive/10 transition-all duration-300 flex-shrink-0"
-              aria-label="Delete vault"
+              className="flex-shrink-0 text-muted-foreground hover:text-destructive p-1.5 sm:p-2 rounded-xl hover:bg-destructive/10 transition-all duration-300 min-w-[36px] min-h-[36px] flex items-center justify-center"
+              aria-label="Move vault to trash"
             >
-              <Trash2 className="size-4" />
+              <Trash2 className="size-3.5 sm:size-4" />
             </button>
           </div>
 
@@ -224,17 +229,17 @@ function VaultCard({ vault, onDeleted }) {
                   {revealed.map((pw, i) => (
                     <div key={i} className="space-y-1">
                       {revealed.length > 1 && (
-                        <div className="text-xs font-bold text-muted-foreground font-mono pl-1">{pw.label}</div>
+                        <div className="text-[10px] font-extrabold text-muted-foreground font-mono pl-1 uppercase tracking-wide">{pw.label}</div>
                       )}
-                      <div className="flex items-center gap-2 rounded-2xl border border-dashed border-emerald-300 bg-emerald-50/40 px-3.5 py-2.5 shadow-sm group/pw">
-                        <span className="flex-1 font-mono text-sm tracking-wider text-emerald-800 truncate select-all">{pw.text}</span>
+                      <div className="flex items-center gap-2 rounded-xl border border-dashed border-emerald-300 bg-emerald-50/40 dark:bg-emerald-950/20 px-3.5 py-2.5 shadow-sm group/pw">
+                        <span className="flex-1 font-mono text-sm tracking-wider text-emerald-800 dark:text-emerald-300 truncate select-all">{pw.text}</span>
                         <button
                           onClick={() => handleCopy(i, pw.text)}
-                          className="text-emerald-600 hover:text-emerald-800 transition-colors p-1 hover:bg-emerald-100 rounded-lg shrink-0"
+                          className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-200 transition-colors p-1 hover:bg-emerald-100 dark:hover:bg-emerald-900 rounded-lg shrink-0 btn-magnetic"
                           aria-label="Copy password"
                         >
                           {copied === i
-                            ? <Check className="size-4.5 text-emerald-600 animate-scale-up" />
+                            ? <Check className="size-4.5 text-emerald-600" />
                             : <Copy className="size-4.5" />
                           }
                         </button>
@@ -250,7 +255,7 @@ function VaultCard({ vault, onDeleted }) {
                   disabled={loading}
                   variant="link"
                   size="none"
-                  className="text-xs text-primary font-bold hover:underline select-none mt-1 inline-flex items-center gap-1"
+                  className="text-xs text-primary font-bold hover:underline select-none mt-1 inline-flex items-center gap-1 btn-magnetic"
                 >
                   {loading ? 'Decrypting…' : revealed ? 'Hide Passwords' : 'Reveal Passwords'}
                   <ChevronRight className="size-3.5" />
@@ -313,7 +318,7 @@ function AddVaultForm({ onClose, onAdded }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-3xl bg-card border border-border p-7 shadow-card space-y-6 mb-8 animate-slide-up relative overflow-hidden group">
+    <form onSubmit={handleSubmit} className="card-3d p-7 space-y-6 mb-8 animate-slide-up relative overflow-hidden group">
       <div className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-primary to-secondary pointer-events-none" />
       <div className="flex items-center gap-3 mb-1">
         <div className="size-11 rounded-2xl bg-primary-soft text-primary grid place-items-center shadow-sm">
@@ -382,7 +387,7 @@ function AddVaultForm({ onClose, onAdded }) {
         <div className="grid grid-cols-4 gap-2">
           {DURATIONS.map((d) => (
             <button key={d.ms} type="button" onClick={() => setDurationMs(d.ms)}
-              className={`rounded-2xl border py-2.5 text-xs font-bold transition-all duration-300 transform active:scale-[0.98] ${
+              className={`rounded-xl border py-2.5 text-xs font-bold transition-all duration-300 transform active:scale-[0.98] ${
                 durationMs === d.ms
                   ? 'bg-gradient-primary text-primary-foreground border-primary shadow-hover'
                   : 'bg-background border-border hover:border-primary/30 hover:bg-primary-soft/40'
@@ -413,11 +418,11 @@ function AddVaultForm({ onClose, onAdded }) {
       {error && <div className="text-xs text-destructive rounded-xl bg-destructive/10 border border-destructive/20 px-3.5 py-2 font-semibold">{error}</div>}
 
       <div className="flex gap-3">
-        <Button type="submit" className="flex-1 rounded-full bg-gradient-primary hover:opacity-95 shadow-soft transition-all duration-300 font-bold" disabled={loading}>
+        <Button type="submit" className="flex-1 rounded-full bg-gradient-primary hover:opacity-95 shadow-soft transition-all duration-300 font-bold btn-magnetic" disabled={loading}>
           <Lock className="size-4.5 mr-1.5" />
           {loading ? 'Encrypting & Sealing…' : `Confirm Lock Contract (${durationLabel})`}
         </Button>
-        <Button type="button" variant="outline" className="rounded-full hover:bg-muted/70 font-semibold" onClick={onClose} disabled={loading}>
+        <Button type="button" variant="outline" className="rounded-full hover:bg-muted/70 font-semibold btn-magnetic" onClick={onClose} disabled={loading}>
           Cancel
         </Button>
       </div>
@@ -428,7 +433,7 @@ function AddVaultForm({ onClose, onAdded }) {
 /* ── Skeleton card ─────────────────────────────────────────────────── */
 function VaultCardSkeleton() {
   return (
-    <div className="rounded-3xl bg-card border border-border p-6 shadow-card flex gap-5">
+    <div className="rounded-xl bg-card border border-border p-6 shadow-card flex gap-5">
       <div className="skeleton size-[60px] rounded-full flex-shrink-0" />
       <div className="flex-1 space-y-2.5 pt-1.5">
         <div className="skeleton h-4 w-36" />
@@ -451,10 +456,12 @@ function VaultPage() {
 
   useEffect(() => {
     if (!user) return
-    auth.currentUser.getIdToken()
+    let mounted = true
+    auth.currentUser.getIdToken(true)
       .then((token) => getVaults(token))
-      .then((res) => { setVaults(res.vaults || []); setLoading(false) })
-      .catch((e) => { setError(e.message || 'Could not load vaults'); setLoading(false) })
+      .then((res) => { if (mounted) { setVaults(res.vaults || []); setLoading(false) } })
+      .catch((e) => { if (mounted) { setError(e.message || 'Could not load vaults'); setLoading(false) } })
+    return () => { mounted = false }
   }, [user])
 
   const filtered = vaults.filter((v) =>
@@ -465,6 +472,15 @@ function VaultPage() {
 
   return (
     <div className="relative z-10 container mx-auto max-w-2xl px-5 py-12">
+      {/* Back to Dashboard */}
+      <Link
+        to="/dashboard"
+        className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-primary transition-colors mb-6 select-none group/back"
+      >
+        <ChevronLeft className="size-3.5 transition-transform group-hover/back:-translate-x-0.5" />
+        Back to Dashboard
+      </Link>
+
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
@@ -522,14 +538,14 @@ function VaultPage() {
       {/* Empty state */}
       {!loading && vaults.length === 0 && !showAdd && (
         <div className="text-center py-20 animate-fade-in select-none">
-          <div className="size-20 mx-auto rounded-3xl bg-primary-soft text-primary border border-primary/10 grid place-items-center mb-6 shadow-soft">
+          <div className="size-20 mx-auto rounded-xl bg-primary-soft text-primary border border-primary/10 grid place-items-center mb-6 shadow-soft">
             <Lock className="size-9" />
           </div>
           <h3 className="font-extrabold text-xl mb-2 text-foreground font-display">No locked credentials</h3>
           <p className="text-sm text-muted-foreground mt-1.5 max-w-xs mx-auto mb-7 pr-1 font-semibold leading-relaxed">
             Encrypt and lock your password credentials behind enforced timers to reclaim your focus.
           </p>
-          <Button onClick={() => setShowAdd(true)} className="rounded-full bg-gradient-primary hover:opacity-95 shadow-soft font-bold">
+          <Button onClick={() => setShowAdd(true)} className="rounded-full bg-gradient-primary hover:opacity-95 shadow-soft font-bold btn-magnetic">
             Lock Your First Password
           </Button>
         </div>
@@ -545,11 +561,12 @@ function VaultPage() {
       {/* Vault list */}
       <div className="space-y-4">
         {filtered.map((vault) => (
-          <VaultCard
-            key={vault.id}
-            vault={vault}
-            onDeleted={(id) => setVaults((prev) => prev.filter((v) => v.id !== id))}
-          />
+          <LiquidWave key={vault.id}>
+            <VaultCard
+              vault={vault}
+              onDeleted={(id) => setVaults((prev) => prev.filter((v) => v.id !== id))}
+            />
+          </LiquidWave>
         ))}
       </div>
     </div>

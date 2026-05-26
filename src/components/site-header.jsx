@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useRouterState } from '@tanstack/react-router';
-import { Menu, X, Lock, LayoutDashboard, LogOut, User } from 'lucide-react';
+import { Menu, X, Lock, LayoutDashboard, LogOut, User, Trash2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 
 const NAV_LINKS = [
@@ -112,7 +112,7 @@ export function SiteHeader() {
                 to="/dashboard"
                 aria-current={currentPath.startsWith('/dashboard') ? 'page' : undefined}
                 className={`
-                  flex items-center gap-2 px-4.5 py-2 rounded-full text-sm font-semibold tracking-tight transition-all duration-300 border border-transparent
+                  flex items-center gap-2 px-[18px] py-2 rounded-full text-sm font-semibold tracking-tight transition-all duration-300 border border-transparent
                   ${currentPath.startsWith('/dashboard') || currentPath.startsWith('/vault') || currentPath.startsWith('/future-mail')
                     ? 'text-primary bg-primary-soft/80 border-primary/10'
                     : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
@@ -122,9 +122,23 @@ export function SiteHeader() {
                 <LayoutDashboard className="size-3.5" />
                 Dashboard
               </Link>
+              <Link
+                to="/trash"
+                aria-current={currentPath.startsWith('/trash') ? 'page' : undefined}
+                className={`
+                  flex items-center gap-2 px-[18px] py-2 rounded-full text-sm font-semibold tracking-tight transition-all duration-300 border border-transparent
+                  ${currentPath.startsWith('/trash')
+                    ? 'text-primary bg-primary-soft/80 border-primary/10'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                  }
+                `}
+              >
+                <Trash2 className="size-3.5" />
+                Trash
+              </Link>
               <button
                 onClick={() => signOut()}
-                className="flex items-center gap-2 px-4.5 py-2 rounded-full text-sm font-semibold tracking-tight border border-border/80 hover:bg-muted/50 hover:border-border transition-all duration-300 text-muted-foreground hover:text-foreground"
+                className="flex items-center gap-2 px-[18px] py-2 rounded-full text-sm font-semibold tracking-tight border border-border/80 hover:bg-muted/50 hover:border-border transition-all duration-300 text-muted-foreground hover:text-foreground"
                 aria-label="Sign out"
               >
                 <LogOut className="size-3.5" />
@@ -135,7 +149,7 @@ export function SiteHeader() {
             <>
               <Link
                 to="/login"
-                className="px-4.5 py-2 rounded-full text-sm font-semibold tracking-tight text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-300"
+                className="px-[18px] py-2 rounded-full text-sm font-semibold tracking-tight text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-300"
               >
                 Sign in
               </Link>
@@ -202,8 +216,8 @@ export function SiteHeader() {
               <Link
                 to="/dashboard"
                 className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-semibold transition-all duration-200 ${
-                  currentPath.startsWith('/dashboard') 
-                    ? 'text-primary bg-primary-soft border-primary/5' 
+                  currentPath.startsWith('/dashboard') || currentPath.startsWith('/vault') || currentPath.startsWith('/future-mail')
+                    ? 'text-primary bg-primary-soft border-primary/5 shadow-sm'
                     : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                 }`}
                 style={{
@@ -214,12 +228,27 @@ export function SiteHeader() {
                 <LayoutDashboard className="size-4" />
                 Dashboard
               </Link>
+              <Link
+                to="/trash"
+                className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-semibold transition-all duration-200 ${
+                  currentPath.startsWith('/trash')
+                    ? 'text-primary bg-primary-soft border-primary/5'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                }`}
+                style={{
+                  animation: open ? 'slide-up 0.3s ease both' : 'none',
+                  animationDelay: `${(NAV_LINKS.length + 1) * 40}ms`
+                }}
+              >
+                <Trash2 className="size-4" />
+                Trash
+              </Link>
               <button
                 onClick={() => signOut()}
                 className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200 text-left"
                 style={{
                   animation: open ? 'slide-up 0.3s ease both' : 'none',
-                  animationDelay: `${(NAV_LINKS.length + 1) * 40}ms`
+                  animationDelay: `${(NAV_LINKS.length + 2) * 40}ms`
                 }}
               >
                 <LogOut className="size-4" />

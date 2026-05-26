@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import {
   Lock, Mail, Shield, Clock, Bell, Eye, Sparkles, Smile, ArrowRight, Check
 } from 'lucide-react';
+import { LiquidWave } from '@/components/liquid-wave';
 
 export const Route = createFileRoute('/features')({ component: FeaturesPage });
 
@@ -71,13 +72,15 @@ const perks = [
 
 function FeatureCard({ icon: Icon, title, body, color }) {
   return (
-    <div className="card-premium p-6 group cursor-default">
-      <div className={`size-11 rounded-2xl ${color} grid place-items-center mb-4 transition-transform duration-300 group-hover:scale-110`}>
-        <Icon className="size-5" />
+    <LiquidWave>
+      <div className="card-premium p-6 group cursor-default h-full">
+        <div className={`size-11 rounded-2xl ${color} grid place-items-center mb-4 transition-transform duration-300 group-hover:scale-110`}>
+          <Icon className="size-5" />
+        </div>
+        <h3 className="font-semibold mb-2">{title}</h3>
+        <p className="text-sm text-muted-foreground leading-relaxed">{body}</p>
       </div>
-      <h3 className="font-semibold mb-2">{title}</h3>
-      <p className="text-sm text-muted-foreground leading-relaxed">{body}</p>
-    </div>
+    </LiquidWave>
   );
 }
 
@@ -137,7 +140,7 @@ function FeaturesPage() {
           </h2>
           <div className="grid sm:grid-cols-2 gap-3">
             {perks.map((perk) => (
-              <div key={perk} className="flex items-center gap-3 rounded-2xl bg-card border border-border px-5 py-4 shadow-card">
+              <div key={perk} className="flex items-center gap-3 card-3d px-5 py-4 cursor-default">
                 <div className="size-5 rounded-full bg-primary-soft grid place-items-center flex-shrink-0">
                   <Check className="size-3 text-primary" />
                 </div>
@@ -152,7 +155,7 @@ function FeaturesPage() {
       <section className="container mx-auto max-w-4xl px-5 py-20 text-center">
         <h2 className="text-2xl md:text-3xl font-bold mb-4">Ready to lock in?</h2>
         <p className="text-muted-foreground mb-8">Start free. No commitment. Cancel anytime.</p>
-        <Button asChild size="lg" className="rounded-full bg-gradient-primary hover:opacity-90 shadow-soft hover:shadow-glow transition-all duration-200 group">
+        <Button asChild size="lg" className="rounded-full bg-gradient-primary hover:opacity-90 shadow-soft hover:shadow-glow transition-all duration-200 group btn-magnetic">
           <Link to="/login">
             Open your vault
             <ArrowRight className="ml-1.5 size-4 group-hover:translate-x-0.5 transition-transform" />

@@ -4,6 +4,7 @@ import {
   Lock, ShieldCheck, EyeOff, Brain, Clock, Shield, Star, ArrowRight, Code2, Sparkles
 } from 'lucide-react';
 import aboutIllustration from '@/assets/about_illustration.png';
+import { LiquidWave } from '@/components/liquid-wave';
 
 export const Route = createFileRoute('/about')({ component: AboutPage });
 
@@ -74,18 +75,20 @@ function AboutPage() {
           
           {/* Right Column: Premium AI Illustration with smooth floating motion & soft reveal */}
           <div className="lg:col-span-4 hidden lg:block relative z-10">
-            <div className="relative group/ill transform hover:scale-[1.02] transition-transform duration-500 flex items-center justify-center">
+            <div className="relative group/ill flex items-center justify-center">
               {/* Subtle back glowing halo */}
               <div className="absolute size-48 rounded-full bg-primary/10 blur-2xl opacity-60 group-hover:opacity-80 transition-opacity duration-700 pointer-events-none" />
-              <div className="relative glass p-2.5 rounded-[2.5rem] border border-white/40 shadow-hover overflow-hidden animate-float">
-                <img
-                  src={aboutIllustration}
-                  alt="Premium minimal technology focus and structured productivity workspace vector illustration"
-                  width={384}
-                  height={384}
-                  className="rounded-[2rem] w-full max-w-[280px] drop-shadow-xl z-10 object-cover"
-                />
-              </div>
+              <LiquidWave isIllustration={true} className="rounded-[2.5rem]">
+                <div className="relative glass p-2.5 rounded-[2.5rem] border border-white/40 shadow-hover overflow-hidden animate-float">
+                  <img
+                    src={aboutIllustration}
+                    alt="Premium minimal technology focus and structured productivity workspace vector illustration"
+                    width={384}
+                    height={384}
+                    className="rounded-[2rem] w-full max-w-[280px] drop-shadow-xl z-10 object-cover"
+                  />
+                </div>
+              </LiquidWave>
             </div>
           </div>
         </div>
@@ -97,17 +100,18 @@ function AboutPage() {
         <div className="container mx-auto max-w-5xl px-5 py-14 relative z-10">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
             {stats.map((s, idx) => (
-              <div 
-                key={s.label} 
-                className="card-premium p-5 text-center group hover:scale-[1.01] transition-all duration-300 animate-slide-up"
-                style={{ animationDelay: `${idx * 40}ms` }}
-              >
-                <div className="size-10 rounded-xl bg-primary-soft text-primary border border-primary/10 grid place-items-center mx-auto mb-3 transition-transform duration-300 group-hover:scale-105 shadow-sm">
-                  <s.icon className="size-5" />
+              <LiquidWave key={s.label}>
+                <div 
+                  className="card-premium p-5 text-center group transition-all duration-300 animate-slide-up h-full"
+                  style={{ animationDelay: `${idx * 40}ms` }}
+                >
+                  <div className="size-10 rounded-xl bg-primary-soft text-primary border border-primary/10 grid place-items-center mx-auto mb-3 transition-transform duration-300 group-hover:scale-105 shadow-sm">
+                    <s.icon className="size-5" />
+                  </div>
+                  <div className="text-xl font-black tracking-tight text-gradient mb-1">{s.value}</div>
+                  <div className="text-[10px] font-extrabold font-mono uppercase text-muted-foreground/80 tracking-wide">{s.label}</div>
                 </div>
-                <div className="text-xl font-black tracking-tight text-gradient mb-1">{s.value}</div>
-                <div className="text-[10px] font-extrabold font-mono uppercase text-muted-foreground/80 tracking-wide">{s.label}</div>
-              </div>
+              </LiquidWave>
             ))}
           </div>
         </div>
@@ -120,18 +124,19 @@ function AboutPage() {
         </h2>
         <div className="grid md:grid-cols-3 gap-6">
           {values.map((v, idx) => (
-            <div 
-              key={v.title} 
-              className="card-premium p-7 group cursor-default relative overflow-hidden animate-slide-up hover:scale-[1.01] transition-all duration-300 bg-card"
-              style={{ animationDelay: `${idx * 50}ms` }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-              <div className={`size-12 rounded-2xl ${v.color} grid place-items-center mb-5 transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-0.5 shadow-sm`}>
-                <v.icon className="size-6" />
+            <LiquidWave key={v.title}>
+              <div 
+                className="card-premium p-7 group cursor-default relative overflow-hidden animate-slide-up transition-all duration-300 bg-card h-full"
+                style={{ animationDelay: `${idx * 50}ms` }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                <div className={`size-12 rounded-2xl ${v.color} grid place-items-center mb-5 transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-0.5 shadow-sm`}>
+                  <v.icon className="size-6" />
+                </div>
+                <h3 className="font-extrabold text-base tracking-tight mb-2 text-foreground">{v.title}</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed font-semibold">{v.body}</p>
               </div>
-              <h3 className="font-extrabold text-base tracking-tight mb-2 text-foreground">{v.title}</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed font-semibold">{v.body}</p>
-            </div>
+            </LiquidWave>
           ))}
         </div>
       </section>
@@ -148,13 +153,14 @@ function AboutPage() {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {stack.map((s, idx) => (
-              <div 
-                key={s.name} 
-                className="rounded-2xl bg-card border border-border/80 px-5 py-4 shadow-card hover:shadow-hover hover:-translate-y-0.5 transition-all duration-300"
-              >
-                <div className="font-extrabold text-sm text-foreground">{s.name}</div>
-                <div className="text-[10px] font-bold text-muted-foreground/80 uppercase mt-0.5 font-mono tracking-wider">{s.desc}</div>
-              </div>
+              <LiquidWave key={s.name}>
+                <div 
+                  className="card-3d px-5 py-4 cursor-default h-full"
+                >
+                  <div className="font-extrabold text-sm text-foreground">{s.name}</div>
+                  <div className="text-[10px] font-bold text-muted-foreground/80 uppercase mt-0.5 font-mono tracking-wider">{s.desc}</div>
+                </div>
+              </LiquidWave>
             ))}
           </div>
         </div>
@@ -168,7 +174,7 @@ function AboutPage() {
         <p className="text-muted-foreground text-sm font-semibold max-w-md mx-auto mb-8 pr-1 leading-relaxed">
           Reclaim your cognitive capital. Formulate timers, delay distraction triggers, and unlock letters from your past self when the contract expires.
         </p>
-        <Button asChild size="lg" className="rounded-full bg-gradient-primary hover:opacity-95 shadow-soft hover:shadow-glow transition-all duration-300 px-8 py-6 text-sm font-bold group">
+        <Button asChild size="lg" className="rounded-full bg-gradient-primary hover:opacity-95 shadow-soft hover:shadow-glow transition-all duration-300 px-8 py-6 text-sm font-bold group btn-magnetic">
           <Link to="/login">
             Lock Distraction Out
             <ArrowRight className="ml-1.5 size-4 group-hover:translate-x-0.5 transition-transform" />

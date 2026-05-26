@@ -1,0 +1,21 @@
+[api]
+enabled = true
+
+[db]
+port = 54322
+
+[studio]
+enabled = true
+port = 54323
+
+# ── Edge Function JWT Configuration ───────────────────────────────────────
+# IMPORTANT: Both functions use Firebase JWTs, not Supabase JWTs.
+# verify_jwt must be FALSE — Supabase's gateway must not try to validate
+# Firebase tokens as Supabase JWTs, which would always return 401.
+# Token verification is handled INSIDE the function using Firebase Admin.
+
+[functions.vault]
+verify_jwt = false
+
+[functions.future-mail]
+verify_jwt = false

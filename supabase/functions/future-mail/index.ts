@@ -7,6 +7,8 @@ const corsHeaders = {
     'authorization, x-client-info, apikey, content-type',
 };
 
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+
 serve(async (req) => {
   if (req.method === 'OPTIONS')
     return new Response('ok', { headers: corsHeaders });
@@ -54,6 +56,7 @@ serve(async (req) => {
     const body = await req.json();
     const { action } = body;
     const now = Date.now();
+    console.log(`[FUTURE MAIL EVENT] Received request: action=${action} userId=${userId} email=${userEmail}`);
 
     // CREATE
     if (action === 'create') {
@@ -61,18 +64,12 @@ serve(async (req) => {
       if (!message || !deliverAt)
         return new Response(
           JSON.stringify({ error: 'Message and delivery date required' }),
-          {
-            status: 400,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          },
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
         );
       if (deliverAt <= now)
         return new Response(
           JSON.stringify({ error: 'Delivery date must be in the future' }),
-          {
-            status: 400,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          },
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
         );
 
       const { data, error } = await supabase
@@ -85,6 +82,8 @@ serve(async (req) => {
           deliver_at: deliverAt,
           created_at: now,
           delivered: false,
+          deleted_at: null,
+          trash_expires_at: null,
         })
         .select()
         .single();
@@ -95,12 +94,13 @@ serve(async (req) => {
       });
     }
 
-    // LIST
+    // LIST (active only — excludes soft-deleted)
     if (action === 'list') {
       const { data, error } = await supabase
         .from('future_mails')
         .select('id, subject, deliver_at, created_at, delivered, delivered_at')
         .eq('user_id', userId)
+        .is('deleted_at', null)
         .order('deliver_at', { ascending: true });
       if (error) throw error;
       return new Response(JSON.stringify({ mails: data }), {
@@ -108,27 +108,114 @@ serve(async (req) => {
       });
     }
 
-    // DELETE
+    // SOFT DELETE — moves to trash (30-day recovery)
     if (action === 'delete') {
+      const { mailId } = body;
+      console.log(`[DELETE FUTURE MAIL] Soft deleting mailId=${mailId} for userId=${userId}`);
+      const { data, error } = await supabase
+        .from('future_mails')
+        .update({
+          deleted_at: now,
+          trash_expires_at: now + THIRTY_DAYS_MS,
+        })
+        .eq('id', mailId)
+        .eq('user_id', userId)
+        .select();
+
+      if (error) {
+        console.error(`[DELETE FUTURE MAIL ERROR]`, error.message);
+        throw error;
+      }
+      if (!data || data.length === 0) {
+        return new Response(JSON.stringify({ error: 'Mail not found or already deleted' }), {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      console.log(`[DELETE FUTURE MAIL SUCCESS] Rows affected:`, data.length);
+      return new Response(JSON.stringify({ success: true, trashed: true, mail: data[0] }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // TRASH LIST — returns trashed items for this user
+    if (action === 'trash_list') {
+      console.log(`[TRASH LIST FUTURE MAILS] Fetching trash for userId=${userId}`);
+      const { data, error } = await supabase
+        .from('future_mails')
+        .select('id, subject, deliver_at, created_at, delivered, deleted_at, trash_expires_at')
+        .eq('user_id', userId)
+        .not('deleted_at', 'is', null)
+        .order('deleted_at', { ascending: false });
+
+      if (error) {
+        console.error(`[TRASH LIST ERROR]`, error.message);
+        throw error;
+      }
+      console.log(`[TRASH LIST SUCCESS] Found items:`, data?.length ?? 0);
+      return new Response(JSON.stringify({ mails: data }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // RESTORE — moves item back to active list
+    if (action === 'restore') {
+      const { mailId } = body;
+      console.log(`[RESTORE FUTURE MAIL] Restoring mailId=${mailId} for userId=${userId}`);
+      const { data, error } = await supabase
+        .from('future_mails')
+        .update({ deleted_at: null, trash_expires_at: null })
+        .eq('id', mailId)
+        .eq('user_id', userId)
+        .select();
+
+      if (error) {
+        console.error(`[RESTORE FUTURE MAIL ERROR]`, error.message);
+        throw error;
+      }
+      console.log(`[RESTORE FUTURE MAIL SUCCESS] Rows restored:`, data?.length ?? 0);
+      return new Response(JSON.stringify({ success: true, restored: true, mail: data?.[0] }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // PERMANENT DELETE — hard deletes from trash
+    if (action === 'permanent_delete') {
       const { mailId } = body;
       const { error } = await supabase
         .from('future_mails')
         .delete()
         .eq('id', mailId)
         .eq('user_id', userId)
-        .eq('delivered', false);
+        .not('deleted_at', 'is', null);
       if (error) throw error;
-      return new Response(JSON.stringify({ success: true }), {
+      return new Response(JSON.stringify({ success: true, permanently_deleted: true }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    // SEND DUE — cron se call hoga har ghante
+    // CLEANUP TRASH — purges expired trash items (called by cron)
+    if (action === 'cleanup_trash') {
+      const { data, error } = await supabase
+        .from('future_mails')
+        .delete()
+        .not('trash_expires_at', 'is', null)
+        .lt('trash_expires_at', now)
+        .select('id');
+      if (error) throw error;
+      return new Response(
+        JSON.stringify({ success: true, purged: data?.length ?? 0 }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
+
+    // SEND DUE — cron triggers to deliver scheduled mails
     if (action === 'send_due') {
       const { data: dueMails, error } = await supabase
         .from('future_mails')
         .select('*')
         .eq('delivered', false)
+        .is('deleted_at', null)
         .lte('deliver_at', now);
       if (error) throw error;
 
@@ -147,9 +234,7 @@ serve(async (req) => {
       }
       return new Response(
         JSON.stringify({ success: true, sent, total: dueMails.length }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        },
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       );
     }
 

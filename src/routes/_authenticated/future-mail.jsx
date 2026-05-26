@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,11 +11,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Mail, Send, Trash2, Clock, CheckCircle2, FlaskConical, Info, PenLine, X, CalendarDays, Inbox, FileText, ChevronRight, Lock } from 'lucide-react'
+import { Mail, Send, Trash2, Clock, CheckCircle2, FlaskConical, Info, PenLine, X, CalendarDays, Inbox, FileText, ChevronRight, Lock, ChevronLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/lib/auth'
 import { auth } from '@/lib/firebase'
 import { createFutureMail, getFutureMails, deleteFutureMail } from '@/lib/future-mail'
+import { LiquidWave } from '@/components/liquid-wave'
 
 export const Route = createFileRoute('/_authenticated/future-mail')({
   validateSearch: (search) => ({
@@ -28,22 +29,22 @@ export const Route = createFileRoute('/_authenticated/future-mail')({
 function DeleteMailDialog({ open, onOpenChange, subject, onConfirm, loading }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm rounded-3xl p-6">
+      <DialogContent className="max-w-sm rounded-xl p-6">
         <DialogHeader>
-          <div className="size-14 rounded-2xl bg-destructive/10 text-destructive grid place-items-center mx-auto mb-4 border border-destructive/20 animate-pulse">
+          <div className="size-14 rounded-xl bg-destructive/10 text-destructive grid place-items-center mx-auto mb-4 border border-destructive/20 animate-pulse">
             <Trash2 className="size-6" />
           </div>
-          <DialogTitle className="text-center font-display font-extrabold text-xl">Cancel this letter?</DialogTitle>
-          <DialogDescription className="text-center text-sm text-muted-foreground mt-2">
-            "<strong>{subject}</strong>" will be permanently deleted and cannot be delivered. This action is irreversible.
+          <DialogTitle className="text-center font-display font-extrabold text-xl">Move to Trash?</DialogTitle>
+          <DialogDescription className="text-center text-sm text-muted-foreground mt-2 leading-relaxed">
+            "<strong>{subject}</strong>" will be moved to Trash. You can restore it anytime within <strong>30 days</strong> before it is permanently deleted.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex-row gap-3 sm:flex-row mt-4">
-          <Button variant="outline" className="flex-1 rounded-full font-bold" onClick={() => onOpenChange(false)} disabled={loading}>
+          <Button variant="outline" className="flex-1 rounded-full font-bold btn-magnetic" onClick={() => onOpenChange(false)} disabled={loading}>
             Keep Letter
           </Button>
-          <Button variant="destructive" className="flex-1 rounded-full font-bold shadow-soft" onClick={onConfirm} disabled={loading}>
-            {loading ? 'Cancelling…' : 'Cancel Letter'}
+          <Button variant="destructive" className="flex-1 rounded-full font-bold shadow-soft btn-magnetic" onClick={onConfirm} disabled={loading}>
+            {loading ? 'Moving…' : 'Move to Trash'}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -60,7 +61,7 @@ function ReadMailDialog({ open, onOpenChange, mail }) {
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md rounded-3xl p-0 overflow-hidden border border-border shadow-hover bg-[#FAF8F5]">
+      <DialogContent className="max-w-md rounded-xl p-0 overflow-hidden border border-border shadow-hover bg-[#FAF8F5]">
         <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-primary to-secondary" />
         <div className="px-6 pt-7 pb-5 flex justify-between items-start border-b border-border/40">
           <div>
@@ -105,13 +106,14 @@ function MailCard({ mail, onDelete }) {
   const handleDelete = async () => {
     setDeleting(true)
     try {
-      const token = await auth.currentUser.getIdToken()
+      const token = await auth.currentUser.getIdToken(true)
       await deleteFutureMail(token, mail.id)
-      onDelete(mail.id)
-      toast.success('Letter cancelled successfully')
+      toast.success('Letter moved to Trash', { description: 'Recoverable from Trash for 30 days.' })
       setDeleteOpen(false)
+      onDelete(mail.id)
     } catch (e) {
-      toast.error(e.message || 'Could not cancel letter')
+      toast.error(e.message || 'Could not move letter to Trash')
+    } finally {
       setDeleting(false)
     }
   }
@@ -132,54 +134,56 @@ function MailCard({ mail, onDelete }) {
         mail={mail}
       />
 
-      <div className={`rounded-3xl bg-card border p-6 shadow-card flex gap-5 transition-all duration-300 hover:shadow-hover relative overflow-hidden group ${
+      <div className={`paper-stack p-4 sm:p-6 flex gap-3 sm:gap-5 relative overflow-hidden group ${
         isDelivered 
-          ? 'border-emerald-200 bg-emerald-50/10' 
+          ? 'border-emerald-200/60 bg-emerald-50/5 dark:bg-emerald-950/5' 
           : 'border-border'
       }`}>
         <div className={`absolute inset-y-0 left-0 w-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none ${isDelivered ? 'bg-emerald-500' : 'bg-primary'}`} />
         
         {/* Envelope stamp icon */}
         <div className="shrink-0 pt-0.5">
-          <div className={`size-11 rounded-2xl grid place-items-center shadow-sm group-hover:scale-105 transition-transform duration-300 ${
+          <div className={`size-10 sm:size-11 rounded-2xl grid place-items-center shadow-sm group-hover:scale-105 transition-transform duration-300 ${
             isDelivered 
               ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' 
               : 'bg-primary-soft text-primary border border-primary/10'
           }`}>
-            {isDelivered ? <Inbox className="size-5.5" /> : <Mail className="size-5.5" />}
+            {isDelivered ? <Inbox className="size-5" /> : <Mail className="size-5" />}
           </div>
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <div className="font-extrabold text-base tracking-tight text-foreground truncate group-hover:text-primary transition-colors duration-200">
+          <div className="flex items-start justify-between gap-2">
+            {/* Subject + date — shrinks and truncates on narrow screens */}
+            <div className="min-w-0 flex-1">
+              <div className="font-extrabold text-sm sm:text-base tracking-tight text-foreground truncate group-hover:text-primary transition-colors duration-200">
                 {mail.subject}
               </div>
-              <div className="text-xs text-muted-foreground mt-0.5 font-semibold font-mono uppercase tracking-wide">
+              <div className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 font-semibold font-mono uppercase tracking-wide truncate">
                 Written {createdDate}
               </div>
             </div>
             
-            <div className="flex items-center gap-2.5 shrink-0 pt-0.5">
-              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-tight uppercase font-mono shadow-sm border ${
+            {/* Badge + delete — always visible, never shrinks off-screen */}
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+              <span className={`inline-flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold tracking-tight uppercase font-mono shadow-sm border ${
                 isDelivered
                   ? 'bg-emerald-100/80 border-emerald-200 text-emerald-700'
                   : 'bg-amber-50 border-amber-100 text-amber-700 animate-pulse'
               }`}>
                 {isDelivered
-                  ? <><CheckCircle2 className="size-3" /> Sealed Expired</>
-                  : <><Lock className="size-3" /> {daysLeft > 0 ? `${daysLeft}d left` : 'Soon'}</>
+                  ? <><CheckCircle2 className="size-3" /><span className="hidden sm:inline ml-1">Expired</span></>
+                  : <><Lock className="size-3" /><span className="ml-1">{daysLeft > 0 ? `${daysLeft}d` : 'Soon'}</span></>
                 }
               </span>
               
               {!isDelivered && (
                 <button
                   onClick={() => setDeleteOpen(true)}
-                  className="text-muted-foreground hover:text-destructive p-2 rounded-xl hover:bg-destructive/10 transition-all duration-300"
-                  aria-label="Cancel letter"
+                  className="flex-shrink-0 text-muted-foreground hover:text-destructive p-1.5 sm:p-2 rounded-xl hover:bg-destructive/10 transition-all duration-300 min-w-[36px] min-h-[36px] flex items-center justify-center"
+                  aria-label="Move letter to trash"
                 >
-                  <Trash2 className="size-4" />
+                  <Trash2 className="size-3.5 sm:size-4" />
                 </button>
               )}
             </div>
@@ -199,7 +203,7 @@ function MailCard({ mail, onDelete }) {
                 onClick={() => setReadOpen(true)}
                 variant="link"
                 size="none"
-                className="text-xs text-primary font-bold hover:underline select-none inline-flex items-center gap-0.5"
+                className="text-xs text-primary font-bold hover:underline select-none inline-flex items-center gap-0.5 btn-magnetic"
               >
                 Read Letter
                 <ChevronRight className="size-3.5" />
@@ -215,7 +219,7 @@ function MailCard({ mail, onDelete }) {
 /* ── Mail skeleton ─────────────────────────────────────────────────── */
 function MailCardSkeleton() {
   return (
-    <div className="rounded-3xl bg-card border border-border p-6 shadow-card flex gap-5">
+    <div className="rounded-xl bg-card border border-border p-6 shadow-card flex gap-5">
       <div className="skeleton size-11 rounded-2xl flex-shrink-0 mt-0.5" />
       <div className="flex-1 space-y-2.5 pt-1">
         <div className="skeleton h-4.5 w-48" />
@@ -253,11 +257,13 @@ function FutureMailPage() {
 
   useEffect(() => {
     if (!user) return
-    auth.currentUser.getIdToken()
+    let mounted = true
+    auth.currentUser.getIdToken(true)
       .then((token) => getFutureMails(token))
-      .then((res) => setMails(res.mails || []))
-      .catch((e) => toast.error(e.message || 'Could not load letters'))
-      .finally(() => setLoading(false))
+      .then((res) => { if (mounted) setMails(res.mails || []) })
+      .catch((e) => { if (mounted) toast.error(e.message || 'Could not load letters') })
+      .finally(() => { if (mounted) setLoading(false) })
+    return () => { mounted = false }
   }, [user])
 
   const handleSend = async (e) => {
@@ -268,10 +274,9 @@ function FutureMailPage() {
       const deliverAt = new Date(`${deliverDate}T${deliverTime}:00`).getTime()
       if (deliverAt <= Date.now()) {
         setError('Delivery time must be in the future.')
-        setSending(false)
         return
       }
-      const token = await auth.currentUser.getIdToken()
+      const token = await auth.currentUser.getIdToken(true)
       const res = await createFutureMail(token, {
         subject: subject.trim() || 'A letter from your past self',
         message: body.trim(),
@@ -281,13 +286,14 @@ function FutureMailPage() {
       const d = new Date(deliverAt).toLocaleString('en-IN', {
         day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
       })
-      toast.success('Capusle sealed and scheduled for ' + d)
+      toast.success('Capsule sealed and scheduled for ' + d)
       setSubject(''); setBody(''); setDeliverDate(''); setDeliverTime('09:00')
       setShowForm(false)
     } catch (e) {
       setError(e.message || 'Could not schedule letter')
+    } finally {
+      setSending(false)
     }
-    setSending(false)
   }
 
   const handleDelete = (id) => {
@@ -300,9 +306,20 @@ function FutureMailPage() {
 
   return (
     <div className="relative z-10 container mx-auto max-w-2xl px-5 py-12">
+      {/* Back to Dashboard */}
+      <div className="text-left">
+        <Link
+          to="/dashboard"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-primary transition-colors mb-6 select-none group/back"
+        >
+          <ChevronLeft className="size-3.5 transition-transform group-hover/back:-translate-x-0.5" />
+          Back to Dashboard
+        </Link>
+      </div>
+
       {/* Header Banner */}
       <div className="text-center mb-10 select-none">
-        <div className="size-16 mx-auto rounded-3xl bg-mint text-mint-foreground grid place-items-center shadow-soft mb-5 border border-emerald-100">
+        <div className="size-16 mx-auto rounded-xl bg-mint text-mint-foreground grid place-items-center shadow-soft mb-5 border border-emerald-100">
           <Mail className="size-8" />
         </div>
         <h1 className="text-3xl font-extrabold tracking-tight font-display text-foreground">Future Mail Caps</h1>
@@ -319,11 +336,11 @@ function FutureMailPage() {
       {/* Trigger Buttons */}
       {!showForm && (
         <div className="flex justify-center gap-3.5 mb-10 flex-wrap">
-          <Button onClick={() => setShowForm(true)} className="rounded-full bg-gradient-primary hover:opacity-95 shadow-soft hover:shadow-glow transition-all duration-300 font-bold">
+          <Button onClick={() => setShowForm(true)} className="rounded-full bg-gradient-primary hover:opacity-95 shadow-soft hover:shadow-glow transition-all duration-300 font-bold btn-magnetic">
             <PenLine className="size-4.5 mr-2" />
             Write Future Letter
           </Button>
-          <Button variant="outline" onClick={fillDemo} className="rounded-full hover:border-primary/20 hover:bg-primary-soft/30 hover:text-primary transition-colors duration-300 font-semibold">
+          <Button variant="outline" onClick={fillDemo} className="rounded-full hover:border-primary/20 hover:bg-primary-soft/30 hover:text-primary transition-colors duration-300 font-semibold btn-magnetic">
             <FlaskConical className="size-4.5 mr-2" />
             Demo Test Capsule
           </Button>
@@ -332,12 +349,12 @@ function FutureMailPage() {
 
       {/* Elegant Virtual Stationery Parchment Composer */}
       {showForm && (
-        <form onSubmit={handleSend} className="rounded-3xl bg-[#FAF8F5] border border-border/80 p-8 shadow-card space-y-6 mb-10 animate-slide-up relative overflow-hidden group">
+        <form onSubmit={handleSend} className="card-3d bg-[#FAF8F5] border border-border/80 p-8 space-y-6 mb-10 animate-slide-up relative overflow-hidden group">
           <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#C2A691] to-[#E9DFD5] pointer-events-none" />
           
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="size-11 rounded-2xl bg-[#EBE5DF] text-[#6B5A4E] grid place-items-center shadow-sm">
+              <div className="size-11 rounded-xl bg-[#EBE5DF] text-[#6B5A4E] grid place-items-center shadow-sm">
                 <FileText className="size-5.5" />
               </div>
               <div>
@@ -379,7 +396,7 @@ function FutureMailPage() {
                 onChange={(e) => setBody(e.target.value.slice(0, charLimit))}
                 required
                 rows={9}
-                className="flex w-full rounded-2xl border border-input/60 bg-white px-5 py-4 font-serif text-[#4E3F35] text-base placeholder:text-muted-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none transition-colors leading-relaxed shadow-sm"
+                className="flex w-full rounded-xl border border-input/60 bg-white px-5 py-4 font-serif text-[#4E3F35] text-base placeholder:text-muted-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none transition-colors leading-relaxed shadow-sm"
                 placeholder="Dear self, I hope you achieved the goals we set today. Are we focusing on what truly matters..."
               />
             </div>
@@ -392,7 +409,7 @@ function FutureMailPage() {
           </div>
 
           {/* Bilingual capsule details box */}
-          <div className="rounded-2xl bg-blue-50/60 border border-blue-100 p-5 relative overflow-hidden group">
+          <div className="rounded-xl bg-blue-50/60 border border-blue-100 p-5 relative overflow-hidden group">
             <span className="absolute -right-6 -bottom-6 text-7xl font-extrabold text-blue-200/10 select-none pointer-events-none">📬</span>
             <div className="flex items-start gap-3">
               <Info className="size-5.5 text-blue-600 shrink-0 mt-0.5" />
@@ -413,11 +430,11 @@ function FutureMailPage() {
           )}
 
           <div className="flex gap-3">
-            <Button type="submit" className="flex-1 rounded-full bg-gradient-primary hover:opacity-95 shadow-soft transition-all duration-300 font-bold" disabled={sending}>
+            <Button type="submit" className="flex-1 rounded-full bg-gradient-primary hover:opacity-95 shadow-soft transition-all duration-300 font-bold btn-magnetic" disabled={sending}>
               <Send className="size-4.5 mr-2" />
               {sending ? 'Sealing Capsule…' : 'Seal & Dispatch Capsule'}
             </Button>
-            <Button type="button" variant="outline" className="rounded-full hover:bg-muted/70 font-semibold"
+            <Button type="button" variant="outline" className="rounded-full hover:bg-muted/70 font-semibold btn-magnetic"
               onClick={() => { setShowForm(false); setError('') }} disabled={sending}>
               Cancel
             </Button>
@@ -435,14 +452,14 @@ function FutureMailPage() {
       {/* Empty State */}
       {!loading && mails.length === 0 && !showForm && (
         <div className="text-center py-20 animate-fade-in select-none">
-          <div className="size-20 mx-auto rounded-3xl bg-primary-soft text-primary border border-primary/10 grid place-items-center mb-6 shadow-soft">
+          <div className="size-20 mx-auto rounded-xl bg-primary-soft text-primary border border-primary/10 grid place-items-center mb-6 shadow-soft">
             <Mail className="size-9" />
           </div>
           <h3 className="font-extrabold text-xl mb-2 text-foreground font-display">No scheduled letters</h3>
           <p className="text-sm text-muted-foreground mt-1.5 max-w-xs mx-auto mb-7 pr-1 font-semibold leading-relaxed">
             Write a reflective message to your future self about your ambitions and digital focus.
           </p>
-          <Button onClick={() => setShowForm(true)} className="rounded-full bg-gradient-primary hover:opacity-95 shadow-soft font-bold">
+          <Button onClick={() => setShowForm(true)} className="rounded-full bg-gradient-primary hover:opacity-95 shadow-soft font-bold btn-magnetic">
             Write Your First Capsule
           </Button>
         </div>
@@ -458,7 +475,9 @@ function FutureMailPage() {
           
           <div className="space-y-4">
             {mails.map((mail) => (
-              <MailCard key={mail.id} mail={mail} onDelete={handleDelete} />
+              <LiquidWave key={mail.id}>
+                <MailCard mail={mail} onDelete={handleDelete} />
+              </LiquidWave>
             ))}
           </div>
           

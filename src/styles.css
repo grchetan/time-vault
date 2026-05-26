@@ -173,6 +173,7 @@
     text-rendering: optimizeLegibility;
   }
 
+
   h1, h2, h3, h4 {
     font-family: var(--font-display);
     letter-spacing: -0.025em;
@@ -285,18 +286,91 @@
     animation: gradient-x 8s ease infinite;
   }
 
-  /* Premium card */
-  .card-premium {
+  /* Premium Soft-3D Card (Geist/Linear inspired) */
+  .card-3d, .card-premium {
     background: var(--card);
     border: 1px solid var(--border);
-    border-radius: var(--radius-3xl);
-    box-shadow: var(--shadow-card);
-    transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
+    border-radius: var(--radius-xl);
+    box-shadow: 
+      0 0 0 1px oklch(0 0 0 / 0.01),
+      0 1px 2px oklch(0 0 0 / 0.02),
+      0 8px 24px oklch(0 0 0 / 0.04);
+    transition: 
+      box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .card-premium:hover {
-    box-shadow: var(--shadow-hover);
-    transform: translateY(-2px);
-    border-color: oklch(0.58 0.18 290 / 0.25);
+  .card-3d:hover, .card-premium:hover {
+    transform: translateY(-4px) scale(1.005);
+    box-shadow: 
+      0 0 0 1px oklch(0.50 0.12 280 / 0.08),
+      0 16px 40px oklch(0 0 0 / 0.06),
+      0 2px 8px oklch(0.50 0.12 280 / 0.04);
+    border-color: oklch(0.50 0.12 280 / 0.25);
+  }
+
+  /* Tactile Soft-3D Inset Card (Pressed Lock State) */
+  .card-3d-inset {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: 
+      inset 0 2px 4px oklch(0 0 0 / 0.04),
+      inset 0 1px 2px oklch(0 0 0 / 0.02),
+      0 1px 2px oklch(0 0 0 / 0.01);
+    transition: 
+      box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+      background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .card-3d-inset:hover {
+    border-color: oklch(0.50 0.12 280 / 0.18);
+    box-shadow: 
+      inset 0 2px 5px oklch(0.50 0.12 280 / 0.05),
+      inset 0 1px 3px oklch(0.50 0.12 280 / 0.03),
+      0 1px 3px oklch(0.50 0.12 280 / 0.02);
+  }
+
+  /* Physical Layered Paper Stack (Future Mail Timelines) */
+  .paper-stack {
+    position: relative;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: 
+      0 1px 2px oklch(0 0 0 / 0.02),
+      3px 3px 0 0 var(--card),
+      4px 4px 0 0 var(--border),
+      6px 6px 0 0 var(--card),
+      7px 7px 0 0 var(--border),
+      0 8px 24px oklch(0 0 0 / 0.04);
+    transition: 
+      transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+      box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+      border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .paper-stack:hover {
+    transform: translateY(-5px) translate(-2px) scale(1.002);
+    border-color: oklch(0.50 0.12 280 / 0.25);
+    box-shadow: 
+      0 2px 4px oklch(0 0 0 / 0.02),
+      4px 4px 0 0 var(--card),
+      5px 5px 0 0 oklch(0.50 0.12 280 / 0.18),
+      8px 8px 0 0 var(--card),
+      9px 9px 0 0 oklch(0.50 0.12 280 / 0.12),
+      0 16px 40px oklch(0 0 0 / 0.06);
+  }
+
+  /* Magnetic Button Hover State */
+  .btn-magnetic {
+    transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease;
+  }
+  .btn-magnetic:hover {
+    transform: scale(1.025);
+    box-shadow: 0 4px 16px oklch(0.50 0.12 280 / 0.12);
+  }
+  .btn-magnetic:active {
+    transform: scale(0.975);
   }
 
   /* Skeleton loading */
@@ -310,15 +384,17 @@
     border-radius: var(--radius-xl);
   }
 
-  /* Scroll reveal */
+  /* Scroll reveal slide-up with subtle rise parallax */
   .reveal {
     opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.6s ease, transform 0.6s ease;
+    transform: translateY(24px) scale(0.985);
+    transition: 
+      opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), 
+      transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .reveal.visible {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 
   /* Active nav link */
@@ -468,47 +544,86 @@
   border-radius: 4px;
 }
 
-/* ⚡ Click Spark Animations */
-@keyframes spark-ripple {
+/* ⚡ Premium Click Spark Animations ─────────────────────────────── */
+
+/* Layer 1: Soft blurred glow ring — expands outward and fades */
+@keyframes spark-glow-ring {
+  0%   { transform: scale(0.3); opacity: 0.9; }
+  60%  { transform: scale(1.4); opacity: 0.5; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+/* Layer 2: Crisp inner ring — snappy expand */
+@keyframes spark-crisp-ring {
+  0%   { transform: scale(0.2); opacity: 0.8; }
+  50%  { transform: scale(1.2); opacity: 0.5; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+/* Layer 3: Larger crisp outer ring — slightly slower */
+@keyframes spark-crisp-ring-lg {
+  0%   { transform: scale(0.1); opacity: 0.5; }
+  40%  { transform: scale(0.9); opacity: 0.3; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+/* Layer 4: Radial particle — uses CSS custom props --tx --ty for direction */
+@keyframes spark-particle {
+  0%   { transform: translate(0, 0) scale(1);   opacity: 0.95; }
+  40%  { opacity: 0.8; }
+  100% { transform: translate(var(--tx, 20px), var(--ty, -20px)) scale(0); opacity: 0; }
+}
+
+.animate-spark-glow-ring {
+  animation: spark-glow-ring 0.65s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  will-change: transform, opacity;
+}
+.animate-spark-crisp-ring {
+  animation: spark-crisp-ring 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+.animate-spark-crisp-ring-lg {
+  animation: spark-crisp-ring-lg 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.04s forwards;
+  will-change: transform, opacity;
+}
+.animate-spark-particle {
+  animation: spark-particle 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  will-change: transform, opacity;
+}
+
+/* 🗑️ Trash Page Premium Exit Animations ─────────────────────────── */
+@keyframes restore-out {
   0% {
-    transform: scale(0.2);
-    opacity: 0.8;
+    transform: translateX(0) scale(1);
+    opacity: 1;
+    filter: blur(0px);
   }
   100% {
-    transform: scale(1.6);
+    transform: translateX(60px) scale(0.96);
     opacity: 0;
+    filter: blur(3px);
   }
 }
 
-@keyframes spark-particle-0 {
-  0% { transform: translate(0, 0) scale(1); opacity: 1; }
-  100% { transform: translate(-24px, -24px) scale(0.2); opacity: 0; }
-}
-@keyframes spark-particle-1 {
-  0% { transform: translate(0, 0) scale(1); opacity: 1; }
-  100% { transform: translate(24px, -24px) scale(0.2); opacity: 0; }
-}
-@keyframes spark-particle-2 {
-  0% { transform: translate(0, 0) scale(1); opacity: 1; }
-  100% { transform: translate(24px, 24px) scale(0.2); opacity: 0; }
-}
-@keyframes spark-particle-3 {
-  0% { transform: translate(0, 0) scale(1); opacity: 1; }
-  100% { transform: translate(-24px, 24px) scale(0.2); opacity: 0; }
+@keyframes delete-out {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+    filter: blur(0px);
+  }
+  100% {
+    transform: scale(0.9) translateY(8px);
+    opacity: 0;
+    filter: blur(3px);
+  }
 }
 
-.animate-spark-ripple {
-  animation: spark-ripple 0.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+.animate-restore-out {
+  animation: restore-out 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  pointer-events: none;
 }
-.animate-spark-particle-0 {
-  animation: spark-particle-0 0.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
-}
-.animate-spark-particle-1 {
-  animation: spark-particle-1 0.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
-}
-.animate-spark-particle-2 {
-  animation: spark-particle-2 0.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
-}
-.animate-spark-particle-3 {
-  animation: spark-particle-3 0.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+
+.animate-delete-out {
+  animation: delete-out 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  pointer-events: none;
 }

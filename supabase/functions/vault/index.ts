@@ -7,6 +7,8 @@ const corsHeaders = {
     'authorization, x-client-info, apikey, content-type',
 };
 
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -58,6 +60,7 @@ serve(async (req) => {
     const body = await req.json();
     const { action } = body;
     const now = Date.now();
+    console.log(`[VAULT FUNCTION EVENT] Received request: action=${action} userId=${userId}`);
 
     // CREATE
     if (action === 'create') {
@@ -72,6 +75,8 @@ serve(async (req) => {
           unlock_at: unlockAt,
           duration_label: durationLabel,
           passwords: passwords,
+          deleted_at: null,
+          trash_expires_at: null,
         })
         .select()
         .single();
@@ -82,12 +87,13 @@ serve(async (req) => {
       });
     }
 
-    // LIST (no passwords returned)
+    // LIST (active only — excludes soft-deleted)
     if (action === 'list') {
       const { data, error } = await supabase
         .from('vaults')
         .select('id, name, reason, created_at, unlock_at, duration_label')
         .eq('user_id', userId)
+        .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -105,6 +111,7 @@ serve(async (req) => {
         .select('*')
         .eq('id', vaultId)
         .eq('user_id', userId)
+        .is('deleted_at', null)
         .single();
 
       if (error || !vault) {
@@ -115,7 +122,6 @@ serve(async (req) => {
       }
 
       // ===== SERVER-SIDE TIMER CHECK =====
-      // This runs on Supabase server — NOBODY can bypass this
       if (now < vault.unlock_at) {
         const remaining = vault.unlock_at - now;
         const d = Math.floor(remaining / 86400000);
@@ -136,7 +142,6 @@ serve(async (req) => {
         );
       }
 
-      // Timer expired — return encrypted passwords
       return new Response(
         JSON.stringify({
           success: true,
@@ -148,19 +153,107 @@ serve(async (req) => {
       );
     }
 
-    // DELETE
+    // SOFT DELETE — moves to trash (30-day recovery window)
     if (action === 'delete') {
+      const { vaultId } = body;
+      console.log(`[DELETE VAULT] Soft deleting vaultId=${vaultId} for userId=${userId}`);
+      const { data, error } = await supabase
+        .from('vaults')
+        .update({
+          deleted_at: now,
+          trash_expires_at: now + THIRTY_DAYS_MS,
+        })
+        .eq('id', vaultId)
+        .eq('user_id', userId)
+        .select();
+
+      if (error) {
+        console.error(`[DELETE VAULT ERROR]`, error.message);
+        throw error;
+      }
+      if (!data || data.length === 0) {
+        return new Response(JSON.stringify({ error: 'Vault not found or already deleted' }), {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      console.log(`[DELETE VAULT SUCCESS] Rows affected:`, data.length);
+      return new Response(JSON.stringify({ success: true, trashed: true, vault: data[0] }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // TRASH LIST — returns items in trash for this user
+    if (action === 'trash_list') {
+      console.log(`[TRASH LIST VAULTS] Fetching trash for userId=${userId}`);
+      const { data, error } = await supabase
+        .from('vaults')
+        .select('id, name, reason, created_at, unlock_at, duration_label, deleted_at, trash_expires_at')
+        .eq('user_id', userId)
+        .not('deleted_at', 'is', null)
+        .order('deleted_at', { ascending: false });
+
+      if (error) {
+        console.error(`[TRASH LIST ERROR]`, error.message);
+        throw error;
+      }
+      console.log(`[TRASH LIST SUCCESS] Found items:`, data?.length ?? 0);
+      return new Response(JSON.stringify({ vaults: data }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // RESTORE — removes trash flags, moves back to active
+    if (action === 'restore') {
+      const { vaultId } = body;
+      console.log(`[RESTORE VAULT] Restoring vaultId=${vaultId} for userId=${userId}`);
+      const { data, error } = await supabase
+        .from('vaults')
+        .update({ deleted_at: null, trash_expires_at: null })
+        .eq('id', vaultId)
+        .eq('user_id', userId)
+        .select();
+
+      if (error) {
+        console.error(`[RESTORE VAULT ERROR]`, error.message);
+        throw error;
+      }
+      console.log(`[RESTORE VAULT SUCCESS] Rows restored:`, data?.length ?? 0);
+      return new Response(JSON.stringify({ success: true, restored: true, vault: data?.[0] }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // PERMANENT DELETE — hard deletes from trash
+    if (action === 'permanent_delete') {
       const { vaultId } = body;
       const { error } = await supabase
         .from('vaults')
         .delete()
         .eq('id', vaultId)
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .not('deleted_at', 'is', null);
 
       if (error) throw error;
-      return new Response(JSON.stringify({ success: true }), {
+      return new Response(JSON.stringify({ success: true, permanently_deleted: true }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
+    }
+
+    // CLEANUP TRASH — purges expired trash items (called by cron or admin)
+    if (action === 'cleanup_trash') {
+      const { data, error } = await supabase
+        .from('vaults')
+        .delete()
+        .not('trash_expires_at', 'is', null)
+        .lt('trash_expires_at', now)
+        .select('id');
+
+      if (error) throw error;
+      return new Response(
+        JSON.stringify({ success: true, purged: data?.length ?? 0 }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
     }
 
     return new Response(JSON.stringify({ error: 'Unknown action' }), {

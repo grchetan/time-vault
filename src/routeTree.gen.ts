@@ -18,6 +18,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedVaultRouteImport } from './routes/_authenticated/vault'
+import { Route as AuthenticatedTrashRouteImport } from './routes/_authenticated/trash'
 import { Route as AuthenticatedFutureMailRouteImport } from './routes/_authenticated/future-mail'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 
@@ -65,6 +66,11 @@ const AuthenticatedVaultRoute = AuthenticatedVaultRouteImport.update({
   path: '/vault',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedTrashRoute = AuthenticatedTrashRouteImport.update({
+  id: '/trash',
+  path: '/trash',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedFutureMailRoute = AuthenticatedFutureMailRouteImport.update({
   id: '/future-mail',
   path: '/future-mail',
@@ -86,6 +92,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/future-mail': typeof AuthenticatedFutureMailRoute
+  '/trash': typeof AuthenticatedTrashRoute
   '/vault': typeof AuthenticatedVaultRoute
 }
 export interface FileRoutesByTo {
@@ -98,6 +105,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/future-mail': typeof AuthenticatedFutureMailRoute
+  '/trash': typeof AuthenticatedTrashRoute
   '/vault': typeof AuthenticatedVaultRoute
 }
 export interface FileRoutesById {
@@ -112,6 +120,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/future-mail': typeof AuthenticatedFutureMailRoute
+  '/_authenticated/trash': typeof AuthenticatedTrashRoute
   '/_authenticated/vault': typeof AuthenticatedVaultRoute
 }
 export interface FileRouteTypes {
@@ -126,6 +135,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/dashboard'
     | '/future-mail'
+    | '/trash'
     | '/vault'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -138,6 +148,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/dashboard'
     | '/future-mail'
+    | '/trash'
     | '/vault'
   id:
     | '__root__'
@@ -151,6 +162,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/_authenticated/dashboard'
     | '/_authenticated/future-mail'
+    | '/_authenticated/trash'
     | '/_authenticated/vault'
   fileRoutesById: FileRoutesById
 }
@@ -230,6 +242,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedVaultRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/trash': {
+      id: '/_authenticated/trash'
+      path: '/trash'
+      fullPath: '/trash'
+      preLoaderRoute: typeof AuthenticatedTrashRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/future-mail': {
       id: '/_authenticated/future-mail'
       path: '/future-mail'
@@ -250,12 +269,14 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFutureMailRoute: typeof AuthenticatedFutureMailRoute
+  AuthenticatedTrashRoute: typeof AuthenticatedTrashRoute
   AuthenticatedVaultRoute: typeof AuthenticatedVaultRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFutureMailRoute: AuthenticatedFutureMailRoute,
+  AuthenticatedTrashRoute: AuthenticatedTrashRoute,
   AuthenticatedVaultRoute: AuthenticatedVaultRoute,
 }
 

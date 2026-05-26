@@ -1,11 +1,13 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Lock, Mail, LogOut, Clock, Plus, LockOpen, TrendingUp, Sun, Moon, Sunset, Sparkles, Calendar, ArrowRight, ShieldCheck } from 'lucide-react'
+import { Lock, Mail, LogOut, Clock, Plus, LockOpen, TrendingUp, Sun, Moon, Sunset, Sparkles, Calendar, ArrowRight, ShieldCheck, Trash2 } from 'lucide-react'
 import { useAuth } from '@/lib/auth'
 import { auth } from '@/lib/firebase'
 import { getVaults } from '@/lib/vault'
 import { useRouter } from '@tanstack/react-router'
+import { LiquidWave } from '@/components/liquid-wave'
+import { loadInitialCache, setCachedVaults } from '@/lib/dashboard-cache'
 
 export const Route = createFileRoute('/_authenticated/dashboard')({ component: DashboardPage })
 
@@ -26,27 +28,35 @@ function getGreeting() {
 
 function StatCard({ label, value, icon: Icon, tone, description }) {
   return (
-    <div className="card-premium p-6 group cursor-default select-none relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-      <div className="flex justify-between items-start">
-        <div className="space-y-2">
-          <div className="text-sm font-bold text-muted-foreground tracking-tight uppercase font-mono">{label}</div>
-          <div className="text-4xl font-extrabold tracking-tight text-foreground group-hover:scale-105 transition-transform duration-300 origin-left">
-            {value}
+    <LiquidWave>
+      <div className="card-3d p-6 group cursor-default select-none relative overflow-hidden h-full">
+        {/* SVG Ambient Glow */}
+        <svg className="absolute -right-8 -bottom-8 size-36 pointer-events-none opacity-20 group-hover:opacity-40 transition-opacity duration-500 blur-2xl" aria-hidden="true">
+          <circle cx="72" cy="72" r="50" fill="var(--color-primary)" />
+        </svg>
+        {/* Dynamic top light bar */}
+        <div className="absolute top-0 inset-x-0 h-[1.5px] bg-gradient-to-r from-transparent via-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        
+        <div className="flex justify-between items-start relative z-10">
+          <div className="space-y-2">
+            <div className="text-[10px] font-extrabold text-muted-foreground tracking-wider uppercase font-mono">{label}</div>
+            <div className="text-4xl font-extrabold tracking-tight text-foreground group-hover:scale-105 transition-transform duration-300 origin-left font-display">
+              {value}
+            </div>
+            <div className="text-[11px] text-muted-foreground mt-1 font-semibold">{description}</div>
           </div>
-          <div className="text-[11px] text-muted-foreground mt-1">{description}</div>
-        </div>
-        <div className={`size-11 rounded-2xl ${tone} grid place-items-center shadow-sm group-hover:scale-110 transition-transform duration-300`}>
-          <Icon className="size-5.5" />
+          <div className={`size-11 rounded-xl ${tone} grid place-items-center shadow-sm group-hover:scale-110 transition-transform duration-300`}>
+            <Icon className="size-5" />
+          </div>
         </div>
       </div>
-    </div>
+    </LiquidWave>
   )
 }
 
 function StatSkeleton() {
   return (
-    <div className="rounded-3xl bg-card border border-border p-6 shadow-card space-y-3">
+    <div className="rounded-xl bg-card border border-border p-6 shadow-card space-y-3">
       <div className="flex justify-between">
         <div className="skeleton h-3.5 w-20" />
         <div className="skeleton size-10 rounded-xl" />
@@ -60,8 +70,18 @@ function StatSkeleton() {
 function DashboardPage() {
   const { user, signOut } = useAuth()
   const router = useRouter()
-  const [vaults, setVaults] = useState([])
-  const [loading, setLoading] = useState(true)
+  
+  // Stale-While-Revalidate: Initialize state from local cache instantly
+  const [vaults, setVaults] = useState(() => {
+    const cached = loadInitialCache()
+    return cached || []
+  })
+  const [loading, setLoading] = useState(() => {
+    const cached = loadInitialCache()
+    return !cached
+  })
+  const [isSyncing, setIsSyncing] = useState(false)
+
   const displayName = user?.displayName || user?.email?.split('@')[0] || 'Friend'
   const { text: greeting, Icon: GreetIcon } = getGreeting()
   const quote = motivations[new Date().getDate() % motivations.length]
@@ -74,10 +94,29 @@ function DashboardPage() {
 
   useEffect(() => {
     if (!user) return
-    auth.currentUser.getIdToken()
+    let mounted = true
+    setIsSyncing(true)
+    
+    auth.currentUser.getIdToken(true)
       .then((token) => getVaults(token))
-      .then((res) => { setVaults(res.vaults || []); setLoading(false) })
-      .catch(() => setLoading(false))
+      .then((res) => {
+        if (mounted) {
+          const freshVaults = res.vaults || []
+          setVaults(freshVaults)
+          setCachedVaults(freshVaults)
+          setLoading(false)
+          setIsSyncing(false)
+        }
+      })
+      .catch((err) => {
+        console.error('[DASHBOARD] Sync failed:', err)
+        if (mounted) {
+          setLoading(false)
+          setIsSyncing(false)
+        }
+      })
+      
+    return () => { mounted = false }
   }, [user])
 
   const activeCount = vaults.filter((v) => Date.now() < v.unlock_at).length
@@ -111,12 +150,18 @@ function DashboardPage() {
               <Calendar className="size-3.5" />
               {formattedDate}
             </span>
+            {isSyncing && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-soft/50 text-primary text-xs font-bold font-mono tracking-wide uppercase shadow-sm animate-pulse">
+                <Sparkles className="size-3.5 text-primary animate-spin" style={{ animationDuration: '3s' }} />
+                Syncing
+              </span>
+            )}
           </div>
           <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-foreground font-display">
             Hello, <span className="text-gradient-moving font-extrabold">{displayName}</span>
           </h1>
           {/* Quote of the day card */}
-          <div className="rounded-2xl border border-dashed border-primary/20 bg-primary-soft/30 p-5 relative overflow-hidden group">
+          <div className="rounded-xl border border-dashed border-primary/20 bg-primary-soft/30 p-5 relative overflow-hidden group">
             <span className="absolute -right-3 -bottom-6 text-7xl font-extrabold text-primary/5 select-none font-serif group-hover:scale-110 transition-transform duration-300">“</span>
             <p className="text-sm font-semibold italic text-foreground/80 leading-relaxed pr-6">
               "{quote}"
@@ -127,7 +172,7 @@ function DashboardPage() {
         <div className="lg:col-span-4 flex justify-end">
           <Button
             variant="outline"
-            className="rounded-full hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 transition-all duration-300 font-semibold tracking-tight"
+            className="rounded-full hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 transition-all duration-300 font-semibold tracking-tight btn-magnetic"
             onClick={() => signOut().then(() => router.navigate({ to: '/' }))}
           >
             <LogOut className="size-4 mr-2" />
@@ -170,16 +215,19 @@ function DashboardPage() {
         </div>
 
         {/* Right column: Gamified Discipline Insight */}
-        <div className="card-premium p-6 flex flex-col justify-between items-center text-center select-none relative group">
-          <div className="absolute top-4 right-4">
+        <div className="card-3d p-6 flex flex-col justify-between items-center text-center select-none relative group">
+          {/* Ambient radial glow */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent opacity-40 group-hover:opacity-80 transition-opacity duration-500 pointer-events-none blur-xl" />
+          
+          <div className="absolute top-4 right-4 relative z-10">
             <Sparkles className="size-4.5 text-primary animate-pulse" />
           </div>
-          <div className="w-full flex items-center justify-between border-b border-border/50 pb-3 mb-4">
-            <span className="text-xs font-bold text-muted-foreground uppercase font-mono tracking-wider">Discipline Level</span>
+          <div className="w-full flex items-center justify-between border-b border-border/50 pb-3 mb-4 relative z-10">
+            <span className="text-[10px] font-extrabold text-muted-foreground uppercase font-mono tracking-wider">Discipline Level</span>
             <span className={`text-xs font-bold font-mono ${status.color}`}>{status.title}</span>
           </div>
 
-          <div className="relative size-28 flex items-center justify-center my-1.5">
+          <div className="relative size-28 flex items-center justify-center my-1.5 relative z-10">
             <svg width="112" height="112" viewBox="0 0 80 80">
               <circle cx="40" cy="40" r={r} fill="none" stroke="var(--color-border)" strokeWidth="4.5" />
               <circle
@@ -200,12 +248,12 @@ function DashboardPage() {
               </defs>
             </svg>
             <div className="absolute flex flex-col items-center justify-center">
-              <span className="text-2xl font-black text-foreground leading-none">{loading ? '…' : disciplineScore}</span>
-              <span className="text-[10px] text-muted-foreground font-bold tracking-wider mt-0.5">SCORE</span>
+              <span className="text-2xl font-black text-foreground leading-none font-display">{loading ? '…' : disciplineScore}</span>
+              <span className="text-[10px] text-muted-foreground font-bold tracking-wider mt-0.5 font-mono">SCORE</span>
             </div>
           </div>
 
-          <p className="text-xs text-muted-foreground leading-relaxed px-2 mt-4">
+          <p className="text-xs text-muted-foreground leading-relaxed px-2 mt-4 relative z-10 font-semibold">
             {loading ? 'Calculating your discipline rank…' : status.desc}
           </p>
         </div>
@@ -215,57 +263,102 @@ function DashboardPage() {
       <h2 className="text-lg font-bold tracking-tight mb-5 font-display">Focus Shortcuts</h2>
       <div className="grid md:grid-cols-2 gap-6 mb-10">
         {/* Password Vault panel */}
-        <div className="card-premium p-7 relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-          <div className="size-12 rounded-2xl bg-primary-soft text-primary grid place-items-center mb-5 shadow-sm group-hover:scale-105 transition-transform duration-300">
-            <Lock className="size-6" />
-          </div>
-          <h3 className="text-xl font-bold mb-2">Password Vault</h3>
-          <p className="text-muted-foreground text-sm mb-4 leading-relaxed">
-            Seclude your social media or gaming credentials behind dynamic, server-enforced timers to regain control of your attention.
-          </p>
-          <div className="rounded-xl bg-amber-50/50 border border-amber-200/50 px-3.5 py-2.5 mb-6 flex items-start gap-2.5">
-            <ShieldCheck className="size-4 text-amber-600 shrink-0 mt-0.5" />
-            <p className="text-[11px] text-amber-700 leading-normal font-semibold">
-              Enforced strictly on database: No early reveals, no override buttons.
+        <LiquidWave className="h-full">
+          <div className="card-3d p-7 relative overflow-hidden group h-full">
+            {/* Ambient glow */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+            <svg className="absolute -right-8 -bottom-8 size-40 pointer-events-none opacity-10 group-hover:opacity-25 transition-opacity duration-500 blur-2xl" aria-hidden="true">
+              <circle cx="80" cy="80" r="60" fill="var(--color-primary)" />
+            </svg>
+            <div className="size-12 rounded-xl bg-primary-soft text-primary grid place-items-center mb-5 shadow-sm group-hover:scale-105 transition-transform duration-300 relative z-10">
+              <Lock className="size-6" />
+            </div>
+            <h3 className="text-xl font-bold mb-2 font-display relative z-10">Password Vault</h3>
+            <p className="text-muted-foreground text-sm mb-4 leading-relaxed font-medium relative z-10 font-sans">
+              Seclude your social media or gaming credentials behind dynamic, server-enforced timers to regain control of your attention.
             </p>
+            <div className="rounded-xl bg-amber-50/50 dark:bg-amber-950/10 border border-amber-200/50 px-3.5 py-2.5 mb-6 flex items-start gap-2.5 relative z-10">
+              <ShieldCheck className="size-4 text-amber-600 shrink-0 mt-0.5" />
+              <p className="text-[11px] text-amber-700 dark:text-amber-400 leading-normal font-semibold">
+                Enforced strictly on database: No early reveals, no override buttons.
+              </p>
+            </div>
+            <div className="flex gap-2 relative z-10">
+              <Button asChild className="rounded-full flex-1 bg-gradient-primary hover:opacity-95 shadow-soft hover:shadow-glow transition-all duration-300 group/btn btn-magnetic">
+                <Link to="/vault" search={{ new: true }}>
+                  <Plus className="size-4 mr-1.5" />
+                  New Lock
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="rounded-full hover:border-primary/20 hover:bg-primary-soft/30 hover:text-primary transition-colors duration-300 btn-magnetic">
+                <Link to="/vault">View Vaults</Link>
+              </Button>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <Button asChild className="rounded-full flex-1 bg-gradient-primary hover:opacity-95 shadow-soft hover:shadow-glow transition-all duration-300 group/btn">
-              <Link to="/vault" search={{ new: true }}>
-                <Plus className="size-4 mr-1.5" />
-                New Lock
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="rounded-full hover:border-primary/20 hover:bg-primary-soft/30 hover:text-primary transition-colors duration-300">
-              <Link to="/vault">View Vaults</Link>
-            </Button>
-          </div>
-        </div>
+        </LiquidWave>
 
         {/* Future Mail panel */}
-        <div className="card-premium p-7 relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-          <div className="size-12 rounded-2xl bg-mint text-mint-foreground grid place-items-center mb-5 shadow-sm group-hover:scale-105 transition-transform duration-300">
-            <Mail className="size-6" />
-          </div>
-          <h3 className="text-xl font-bold mb-2">Future Mail</h3>
-          <p className="text-muted-foreground text-sm mb-4 leading-relaxed">
-            Draft motivational letters or discipline advice to your future self and receive them directly in your inbox at your chosen time.
-          </p>
-          <div className="rounded-xl bg-blue-50/50 border border-blue-100/50 px-3.5 py-2.5 mb-6 flex items-start gap-2.5">
-            <Sparkles className="size-4 text-blue-600 shrink-0 mt-0.5" />
-            <p className="text-[11px] text-blue-700 leading-normal font-semibold">
-              Write today. Securely scheduled. Delivered exactly when it matters most.
+        <LiquidWave className="h-full">
+          <div className="card-3d p-7 relative overflow-hidden group h-full">
+            {/* Ambient glow */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-mint/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+            <svg className="absolute -right-8 -bottom-8 size-40 pointer-events-none opacity-10 group-hover:opacity-25 transition-opacity duration-500 blur-2xl" aria-hidden="true">
+              <circle cx="80" cy="80" r="60" fill="var(--color-mint)" />
+            </svg>
+            <div className="size-12 rounded-xl bg-mint text-mint-foreground grid place-items-center mb-5 shadow-sm group-hover:scale-105 transition-transform duration-300 relative z-10">
+              <Mail className="size-6" />
+            </div>
+            <h3 className="text-xl font-bold mb-2 font-display relative z-10">Future Mail</h3>
+            <p className="text-muted-foreground text-sm mb-4 leading-relaxed font-medium relative z-10 font-sans">
+              Draft motivational letters or discipline advice to your future self and receive them directly in your inbox at your chosen time.
             </p>
+            <div className="rounded-xl bg-blue-50/50 dark:bg-blue-950/10 border border-blue-100/50 px-3.5 py-2.5 mb-6 flex items-start gap-2.5 relative z-10">
+              <Sparkles className="size-4 text-blue-600 shrink-0 mt-0.5" />
+              <p className="text-[11px] text-blue-700 dark:text-blue-400 leading-normal font-semibold">
+                Write today. Securely scheduled. Delivered exactly when it matters most.
+              </p>
+            </div>
+            <Button asChild className="rounded-full w-full bg-gradient-primary hover:opacity-95 shadow-soft hover:shadow-glow transition-all duration-300 group/btn btn-magnetic relative z-10">
+              <Link to="/future-mail" search={{ new: true }}>
+                <Mail className="size-4 mr-1.5" />
+                Write a letter
+              </Link>
+            </Button>
           </div>
-          <Button asChild className="rounded-full w-full bg-gradient-primary hover:opacity-95 shadow-soft hover:shadow-glow transition-all duration-300 group/btn">
-            <Link to="/future-mail" search={{ new: true }}>
-              <Mail className="size-4 mr-1.5" />
-              Write a letter
-            </Link>
-          </Button>
-        </div>
+        </LiquidWave>
+
+        {/* Trash & Recovery panel */}
+        <LiquidWave className="md:col-span-2">
+          <div className="card-3d p-5 sm:p-7 relative overflow-hidden group flex flex-col md:flex-row items-start md:items-center gap-5 md:gap-8 h-full">
+            {/* Ambient glow */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-slate-100/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+            
+            {/* Left side group for Icon + Text (stacks on mobile, row on tablet/desktop) */}
+            <div className="flex flex-col sm:flex-row items-start gap-4 flex-1 min-w-0 relative z-10 w-full">
+              {/* Icon */}
+              <div className="size-12 rounded-xl bg-muted border border-border text-muted-foreground grid place-items-center flex-shrink-0 shadow-sm group-hover:scale-105 transition-transform duration-300">
+                <Trash2 className="size-6" />
+              </div>
+              {/* Title + Description */}
+              <div className="flex-1 min-w-0 space-y-1">
+                <h3 className="text-lg font-bold font-display text-foreground">Trash & Recovery</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed font-medium font-sans">
+                  Accidentally deleted something? Recover vaults or future mail within 30 days before automatic permanent removal.
+                </p>
+              </div>
+            </div>
+            
+            {/* Button (centered/full-width on mobile, auto-width on desktop) */}
+            <div className="w-full md:w-auto flex-shrink-0 flex justify-center relative z-10">
+              <Button asChild variant="outline" className="rounded-full w-full md:w-auto hover:border-primary/20 hover:bg-primary-soft/30 hover:text-primary transition-colors duration-300 btn-magnetic">
+                <Link to="/trash" className="flex items-center justify-center gap-2 w-full py-2.5">
+                  <Trash2 className="size-4" />
+                  View Trash
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </LiquidWave>
       </div>
 
       {/* Activity Summary Tracker */}
