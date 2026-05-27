@@ -134,81 +134,84 @@ function MailCard({ mail, onDelete }) {
         mail={mail}
       />
 
-      <div className={`paper-stack p-4 sm:p-6 flex gap-3 sm:gap-5 relative overflow-hidden group ${
-        isDelivered 
-          ? 'border-emerald-200/60 bg-emerald-50/5 dark:bg-emerald-950/5' 
-          : 'border-border'
+      <div className={`relative flex items-center justify-between gap-3 bg-white dark:bg-card border border-border/85 hover:border-primary/25 hover:shadow-soft hover:-translate-y-0.5 rounded-xl p-3 sm:px-4 sm:py-3 transition-all duration-300 group select-none w-full ${
+        isDelivered ? 'border-emerald-500/15 dark:border-emerald-500/15' : ''
       }`}>
-        <div className={`absolute inset-y-0 left-0 w-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none ${isDelivered ? 'bg-emerald-500' : 'bg-primary'}`} />
-        
-        {/* Envelope stamp icon */}
-        <div className="shrink-0 pt-0.5">
-          <div className={`size-10 sm:size-11 rounded-2xl grid place-items-center shadow-sm group-hover:scale-105 transition-transform duration-300 ${
-            isDelivered 
-              ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' 
-              : 'bg-primary-soft text-primary border border-primary/10'
-          }`}>
-            {isDelivered ? <Inbox className="size-5" /> : <Mail className="size-5" />}
+        {/* Left Section: Status Icon & Title + Subtext */}
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          {/* Subtle Status Icon */}
+          <div className="shrink-0">
+            <div className={`size-8 rounded-lg grid place-items-center border transition-colors duration-300 ${
+              isDelivered 
+                ? 'bg-emerald-500/5 text-emerald-600 border-emerald-500/10' 
+                : 'bg-primary-soft text-primary border-primary/10'
+            }`}>
+              {isDelivered ? <Inbox className="size-4" /> : <Mail className="size-4" />}
+            </div>
+          </div>
+
+          {/* Typography Hierarchy */}
+          <div className="min-w-0 flex-1">
+            <div className="font-semibold text-sm sm:text-base text-foreground tracking-tight truncate leading-tight group-hover:text-primary transition-colors duration-200">
+              {mail.subject}
+            </div>
+            
+            {/* Metadata Rows */}
+            <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-muted-foreground mt-0.5 font-medium font-sans">
+              <span className="font-mono text-[9px] uppercase tracking-wider font-semibold opacity-75">Written {createdDate}</span>
+              <span className="text-muted-foreground/30 font-sans">&middot;</span>
+              <span className="flex items-center gap-1 text-[11px] sm:text-xs">
+                <CalendarDays className="size-3 text-muted-foreground/60 shrink-0" />
+                <span>
+                  {isDelivered ? 'Delivered' : 'Unseals'}{' '}
+                  <strong className="text-foreground/80 font-medium">{deliverDateTime}</strong>
+                </span>
+              </span>
+            </div>
           </div>
         </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            {/* Subject + date — shrinks and truncates on narrow screens */}
-            <div className="min-w-0 flex-1">
-              <div className="font-extrabold text-sm sm:text-base tracking-tight text-foreground truncate group-hover:text-primary transition-colors duration-200">
-                {mail.subject}
-              </div>
-              <div className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 font-semibold font-mono uppercase tracking-wide truncate">
-                Written {createdDate}
-              </div>
-            </div>
-            
-            {/* Badge + delete — always visible, never shrinks off-screen */}
-            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-              <span className={`inline-flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold tracking-tight uppercase font-mono shadow-sm border ${
-                isDelivered
-                  ? 'bg-emerald-100/80 border-emerald-200 text-emerald-700'
-                  : 'bg-amber-50 border-amber-100 text-amber-700 animate-pulse'
-              }`}>
-                {isDelivered
-                  ? <><CheckCircle2 className="size-3" /><span className="hidden sm:inline ml-1">Expired</span></>
-                  : <><Lock className="size-3" /><span className="ml-1">{daysLeft > 0 ? `${daysLeft}d` : 'Soon'}</span></>
-                }
-              </span>
-              
-              {!isDelivered && (
-                <button
-                  onClick={() => setDeleteOpen(true)}
-                  className="flex-shrink-0 text-muted-foreground hover:text-destructive p-1.5 sm:p-2 rounded-xl hover:bg-destructive/10 transition-all duration-300 min-w-[36px] min-h-[36px] flex items-center justify-center"
-                  aria-label="Move letter to trash"
-                >
-                  <Trash2 className="size-3.5 sm:size-4" />
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="mt-3.5 flex items-center justify-between border-t border-border/40 pt-3">
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
-              <CalendarDays className="size-4 flex-shrink-0" />
-              <span>
-                {isDelivered ? 'Delivered on' : 'Unseals on'}{' '}
-                <strong className="text-foreground">{deliverDateTime}</strong>
-              </span>
-            </div>
-            
-            {isDelivered && (
-              <Button
-                onClick={() => setReadOpen(true)}
-                variant="link"
-                size="none"
-                className="text-xs text-primary font-bold hover:underline select-none inline-flex items-center gap-0.5 btn-magnetic"
-              >
-                Read Letter
-                <ChevronRight className="size-3.5" />
-              </Button>
+        {/* Right Section: Badge & Subtle Actions */}
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 ml-1.5">
+          {/* Status Badge */}
+          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold tracking-tight uppercase font-mono border ${
+            isDelivered
+              ? 'bg-emerald-500/10 border-emerald-500/15 text-emerald-700'
+              : 'bg-amber-500/10 border-amber-500/15 text-amber-700'
+          }`}>
+            {isDelivered ? (
+              <><CheckCircle2 className="size-2.5 shrink-0" /><span>Unsealed</span></>
+            ) : (
+              <><Lock className="size-2.5 shrink-0" /><span className="animate-pulse">{daysLeft > 0 ? `${daysLeft}d` : 'Soon'}</span></>
             )}
+          </span>
+
+          {/* Compact Actions Layout */}
+          <div className="flex items-center gap-1">
+            {isDelivered && (
+              <button
+                onClick={() => setReadOpen(true)}
+                className="h-8 text-xs text-primary font-bold hover:text-primary/80 transition-colors py-1 px-2.5 hover:bg-primary-soft/50 rounded-lg inline-flex items-center gap-0.5 select-none touch-manipulation font-sans border border-transparent"
+              >
+                <span>Read</span>
+                <ChevronRight className="size-3.5" />
+              </button>
+            )}
+
+            {/* Always Visible Tooltipped Delete Button */}
+            <div className="relative group/tooltip">
+              <button
+                onClick={() => setDeleteOpen(true)}
+                className="text-muted-foreground hover:text-destructive p-1.5 rounded-lg hover:bg-destructive/10 transition-all duration-300 size-8 flex items-center justify-center border border-transparent hover:border-destructive/10 touch-manipulation shrink-0"
+                aria-label="Move letter to trash"
+              >
+                <Trash2 className="size-3.5" />
+              </button>
+              {/* Custom Pure CSS Tooltip */}
+              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-foreground text-background text-[9px] font-bold font-mono uppercase tracking-wider rounded shadow-md pointer-events-none opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50">
+                Delete
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -219,12 +222,17 @@ function MailCard({ mail, onDelete }) {
 /* ── Mail skeleton ─────────────────────────────────────────────────── */
 function MailCardSkeleton() {
   return (
-    <div className="rounded-xl bg-card border border-border p-6 shadow-card flex gap-5">
-      <div className="skeleton size-11 rounded-2xl flex-shrink-0 mt-0.5" />
-      <div className="flex-1 space-y-2.5 pt-1">
-        <div className="skeleton h-4.5 w-48" />
-        <div className="skeleton h-3 w-28" />
-        <div className="skeleton h-3.5 w-40 mt-3.5" />
+    <div className="rounded-xl bg-card border border-border/80 p-3 sm:px-4 sm:py-3 flex items-center justify-between gap-3 shadow-sm">
+      <div className="flex items-center gap-3 min-w-0 flex-1">
+        <div className="skeleton size-8 rounded-lg flex-shrink-0" />
+        <div className="flex-1 space-y-1.5 min-w-0">
+          <div className="skeleton h-3.5 w-36 sm:w-48 rounded" />
+          <div className="skeleton h-3 w-24 sm:w-28 rounded" />
+        </div>
+      </div>
+      <div className="flex items-center gap-2 shrink-0">
+        <div className="skeleton h-5 w-14 sm:w-16 rounded-full" />
+        <div className="skeleton size-8 rounded-lg" />
       </div>
     </div>
   )
@@ -331,6 +339,19 @@ function FutureMailPage() {
             {pending} scheduled capsules &middot; {delivered} unsealed
           </p>
         )}
+      </div>
+
+      {/* Beta / Demo Mode Banner Notice */}
+      <div className="rounded-2xl border border-dashed border-amber-200/80 bg-amber-500/[0.03] p-5 flex items-start gap-4 mb-10 text-xs select-none relative overflow-hidden group">
+        <span className="absolute -right-6 -bottom-6 text-7xl font-extrabold text-amber-500/5 select-none pointer-events-none">🧪</span>
+        <FlaskConical className="size-5.5 text-amber-600 shrink-0 mt-0.5 animate-pulse" />
+        <div className="space-y-1 relative z-10">
+          <p className="font-bold text-amber-800 font-display text-sm">Future Mail currently operates in secure beta delivery mode during development.</p>
+          <p className="text-amber-700 leading-relaxed font-semibold text-[11px] sm:text-xs">
+            In sandbox mode, Resend may reroute emails to the verified owner inbox instead of the target recipient. 
+            You can verify the entire delivery flow step-by-step (scheduled_at check, cron trigger, edge function execution, Resend API dispatch, and database delivered flags updates) normally under this environment!
+          </p>
+        </div>
       </div>
 
       {/* Trigger Buttons */}
@@ -468,16 +489,14 @@ function FutureMailPage() {
       {/* Letter Capsule Lists */}
       {mails.length > 0 && (
         <div className="space-y-4">
-          <div className="flex items-center gap-3 mb-5 border-b border-border/30 pb-3 select-none">
-            <Inbox className="size-4.5 text-muted-foreground" />
-            <h2 className="text-lg font-bold tracking-tight font-display">Scheduled Time Capsules</h2>
+          <div className="flex items-center gap-2.5 mb-4 border-b border-border/30 pb-2.5 select-none">
+            <Inbox className="size-4 text-muted-foreground" />
+            <h2 className="text-base font-bold tracking-tight font-display">Scheduled Time Capsules</h2>
           </div>
           
-          <div className="space-y-4">
+          <div className="space-y-2.5">
             {mails.map((mail) => (
-              <LiquidWave key={mail.id}>
-                <MailCard mail={mail} onDelete={handleDelete} />
-              </LiquidWave>
+              <MailCard key={mail.id} mail={mail} onDelete={handleDelete} />
             ))}
           </div>
           
