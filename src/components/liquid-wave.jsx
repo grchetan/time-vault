@@ -45,12 +45,14 @@ export function LiquidWave({ children, className = '' }) {
     '--mouse-y': `${coords.y}px`,
     // Dampened 3D Tilt: max 1.5 degrees
     transform: hovered
-      ? `perspective(1000px) rotateX(${tilt.ry * -3.0}deg) rotateY(${tilt.rx * 3.0}deg) translateY(-2px) scale(1.006)`
-      : 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px) scale(1)',
+      ? `perspective(1000px) rotateX(${tilt.ry * -2.5}deg) rotateY(${tilt.rx * 2.5}deg) translateY(-2px)`
+      : 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)',
     transition: hovered
       ? 'transform 0.15s ease-out, border-color 0.3s ease, box-shadow 0.3s ease'
       : 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.5s ease, box-shadow 0.5s ease',
     willChange: 'transform',
+    backfaceVisibility: 'hidden',
+    WebkitFontSmoothing: 'antialiased',
   }
 
   return (

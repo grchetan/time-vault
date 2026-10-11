@@ -376,7 +376,7 @@
   }
   .card-3d:hover,
   .card-premium:hover {
-    transform: translateY(-4px) scale(1.005);
+    transform: translateY(-4px);
     box-shadow:
       0 0 0 1px oklch(0.5 0.12 280 / 0.08),
       0 16px 40px oklch(0 0 0 / 0.06),

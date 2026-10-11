@@ -30,10 +30,6 @@ function StatCard({ label, value, icon: Icon, tone, description }) {
   return (
     <LiquidWave>
       <div className="card-3d p-6 group cursor-default select-none relative overflow-hidden h-full">
-        {/* SVG Ambient Glow */}
-        <svg className="absolute -right-8 -bottom-8 size-36 pointer-events-none opacity-20 group-hover:opacity-40 transition-opacity duration-500 blur-2xl" aria-hidden="true">
-          <circle cx="72" cy="72" r="50" fill="var(--color-primary)" />
-        </svg>
         {/* Dynamic top light bar */}
         <div className="absolute top-0 inset-x-0 h-[1.5px] bg-gradient-to-r from-transparent via-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         
@@ -216,8 +212,6 @@ function DashboardPage() {
 
         {/* Right column: Gamified Discipline Insight */}
         <div className="card-3d p-6 flex flex-col justify-between items-center text-center select-none relative group">
-          {/* Ambient radial glow */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent opacity-40 group-hover:opacity-80 transition-opacity duration-500 pointer-events-none blur-xl" />
           
           <div className="absolute top-4 right-4 relative z-10">
             <Sparkles className="size-4.5 text-primary animate-pulse" />
@@ -265,11 +259,6 @@ function DashboardPage() {
         {/* Password Vault panel */}
         <LiquidWave className="h-full">
           <div className="card-3d p-7 relative overflow-hidden group h-full">
-            {/* Ambient glow */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-            <svg className="absolute -right-8 -bottom-8 size-40 pointer-events-none opacity-10 group-hover:opacity-25 transition-opacity duration-500 blur-2xl" aria-hidden="true">
-              <circle cx="80" cy="80" r="60" fill="var(--color-primary)" />
-            </svg>
             <div className="size-12 rounded-xl bg-primary-soft text-primary grid place-items-center mb-5 shadow-sm group-hover:scale-105 transition-transform duration-300 relative z-10">
               <Lock className="size-6" />
             </div>
@@ -300,11 +289,6 @@ function DashboardPage() {
         {/* Future Mail panel */}
         <LiquidWave className="h-full">
           <div className="card-3d p-7 relative overflow-hidden group h-full">
-            {/* Ambient glow */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-mint/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-            <svg className="absolute -right-8 -bottom-8 size-40 pointer-events-none opacity-10 group-hover:opacity-25 transition-opacity duration-500 blur-2xl" aria-hidden="true">
-              <circle cx="80" cy="80" r="60" fill="var(--color-mint)" />
-            </svg>
             <div className="size-12 rounded-xl bg-mint text-mint-foreground grid place-items-center mb-5 shadow-sm group-hover:scale-105 transition-transform duration-300 relative z-10">
               <Mail className="size-6" />
             </div>
