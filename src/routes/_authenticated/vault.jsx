@@ -409,7 +409,7 @@ function AddVaultForm({ onClose, onAdded }) {
               Once locked, this password will be encrypted using client-side AES-256 and sealed on the database. It cannot be revealed by anyone—including support—until the timer expires.
             </div>
             <div className="text-xs text-amber-600 italic border-t border-amber-200/50 pt-2 mt-2 leading-relaxed font-semibold">
-              Yeh password <strong className="text-amber-800 font-bold">{durationLabel}</strong> tak completely lock rahega. Bypass karna asambhav hai.
+              This password will remain completely locked for <strong className="text-amber-800 font-bold">{durationLabel}</strong>. It cannot be bypassed.
             </div>
           </div>
         </div>
